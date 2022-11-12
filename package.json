@@ -42,14 +42,14 @@
     "start": "concurrently --names 'SERVER,CLIENT' -c 'bgBlue.bold,bgMagenta.bold' 'npm run server' 'npm run client'",
     "client": "react-scripts start",
     "server": "cd api && conda run --no-capture-output -n vizdom python -u -m flask run",
-    "freeze": "cd api && conda env export > environment.yml",
+    "freeze": "cd api && conda env export > environment.yml && pip freeze > requirements.txt",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "lint": "eslint .",
     "lint:fix": "eslint --fix",
     "format": "prettier --write './**/*.{js,jsx,ts,tsx,css,md,json}' --config ./.prettierrc",
-    "prepare": "husky install && conda env create -f api/environment.yml"
+    "prepare": "husky install && cd api && conda env create -f api/environment.yml && pip install -r requirements.txt"
   },
   "eslintConfig": {
     "extends": [
