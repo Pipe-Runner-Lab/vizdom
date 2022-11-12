@@ -49,7 +49,7 @@
     "lint": "eslint .",
     "lint:fix": "eslint --fix",
     "format": "prettier --write './**/*.{js,jsx,ts,tsx,css,md,json}' --config ./.prettierrc",
-    "prepare": "husky install && cd api && conda env create -f api/environment.yml && pip install -r requirements.txt"
+    "prepare": "husky install && cd api && conda env create -f ./environment.yml && pip install -r requirements.txt"
   },
   "eslintConfig": {
     "extends": [
