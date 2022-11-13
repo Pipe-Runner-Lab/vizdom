@@ -1,15 +1,16 @@
 import React from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import useStore from '../../store';
 import { HiOutlineMenu as OpenIcon } from 'react-icons/hi';
-import { VscChromeClose as CloseIcon } from 'react-icons/vsc';
+
+import PrimaryHeader from './components/PrimaryHeader';
 
 const mainPanelVariants = {
   open: {
     x: 0
   },
   closed: {
-    x: 'calc(100% + 1rem)'
+    x: 'calc(100% + 0.5rem)'
   }
 };
 
@@ -18,7 +19,7 @@ const secondaryPanelVariants = {
     y: 0
   },
   closed: {
-    y: 'calc(100% + 1rem)'
+    y: 'calc(100% + 0.5rem)'
   }
 };
 
@@ -27,7 +28,7 @@ function Overlay(): JSX.Element {
   const setIsMenuOpen = useStore((state) => state.setIsMenuOpen);
 
   return (
-    <div className="flex w-full h-full space-x-4">
+    <div className="flex w-full h-full space-x-2">
       <div className="flex flex-col justify-end flex-1">
         <div className="flex-1 hidden">hi</div>
         <motion.div
@@ -37,11 +38,11 @@ function Overlay(): JSX.Element {
             duration: 0.3,
             type: 'tween'
           }}
-          className="h-24 bg-white rounded-md shadow-lg pointer-events-auto">
+          className="h-24 rounded-md shadow-lg pointer-events-auto bg-white/80 backdrop-blur-sm">
           {/* Secondary Panel content */}
         </motion.div>
       </div>
-      <div className="flex w-1/3 max-w-sm">
+      <div className="flex w-2/5 max-w-md">
         <motion.div
           variants={mainPanelVariants}
           animate={isMenuOpen ? 'open' : 'closed'}
@@ -49,13 +50,27 @@ function Overlay(): JSX.Element {
             duration: 0.3,
             type: 'tween'
           }}
-          className="relative w-full h-full bg-white rounded-md shadow-lg pointer-events-auto">
-          <button
-            className="shadow-md bg-white w-10 h-10 rounded-md absolute top-0 left-0 translate-x-[calc(-100%-1rem)] flex items-center justify-center p-0"
-            onClick={() => setIsMenuOpen(!isMenuOpen)}>
-            {isMenuOpen ? <CloseIcon size={26} /> : <OpenIcon size={26} />}
-          </button>
+          className="relative w-full h-full rounded-md shadow-lg pointer-events-auto bg-white/80 backdrop-blur-sm">
+          <AnimatePresence>
+            {!isMenuOpen && (
+              <motion.button
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1, transition: { duration: 1 } }}
+                exit={{ opacity: 0, transition: { duration: 0.3 } }}
+                className="shadow-md bg-blue-300 w-10 h-10 rounded-md absolute top-[0.5rem] left-0 translate-x-[calc(-100%-1rem)] flex items-center justify-center"
+                onClick={() => setIsMenuOpen(true)}>
+                <OpenIcon size={26} />
+              </motion.button>
+            )}
+          </AnimatePresence>
           {/* Primary Panel content */}
+          <div className="w-full p-2">
+            <PrimaryHeader />
+          </div>
+
+          <div className="h-[1px] w-auto mx-2 bg-gray-300" />
+
+          <div></div>
         </motion.div>
       </div>
     </div>
