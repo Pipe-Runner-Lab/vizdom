@@ -136,5 +136,5 @@ dependencies:
   - zipp=3.8.0=py39h06a4308_0
   - zlib=1.2.13=h5eee18b_0
   - pip:
-    - singleton-decorator==1.0.0
+      - singleton-decorator==1.0.0
 prefix: /home/piperunner/miniconda3/envs/vizdom
