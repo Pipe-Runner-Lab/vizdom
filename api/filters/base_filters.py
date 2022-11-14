@@ -1,5 +1,5 @@
 """
-Filters are responsible for dropping necessary columns and filling NaNs.
+Filters are responsible for dropping unnecessary columns and filling NaNs.
 """
 
 
