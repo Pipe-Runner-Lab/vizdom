@@ -9,11 +9,21 @@ The pipeline is as follows:
 """
 
 from db.connection import DBConnection
+from crawlers.url_crawlers import get_our_world_in_data
+from filters.base_filters import fill_nans
 
-cur = DBConnection().get_cursor()
-cur.execute("CREATE TABLE fish (name TEXT, species TEXT, tank_number INTEGER)")
-cur.execute("INSERT INTO fish VALUES ('Sammy', 'shark', 1)")
-cur.execute("INSERT INTO fish VALUES ('Jamie', 'cuttlefish', 7)")
+# cur = DBConnection().get_cursor()
 
-rows = cur.execute("SELECT name, species, tank_number FROM fish").fetchall()
-print(rows)
+# cur.execute("INSERT INTO fish VALUES ('Sammy', 'shark', 1)")
+# cur.execute("INSERT INTO fish VALUES ('Jamie', 'cuttlefish', 7)")
+
+# rows = cur.execute("SELECT name, species, tank_number FROM fish").fetchall()
+# print(rows)
+
+db = DBConnection()
+
+raw_data = get_our_world_in_data()
+filtered_data = fill_nans(raw_data)
+# skipping processing
+# print(filtered_data.shape)
+db.populate_with_data_frame('covid', filtered_data)
