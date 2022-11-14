@@ -4,6 +4,7 @@ import useStore from '../../store';
 import { HiOutlineMenu as OpenIcon } from 'react-icons/hi';
 
 import PrimaryHeader from './components/PrimaryHeader';
+import ExplorationPanel from '../exploration-panel';
 
 const mainPanelVariants = {
   open: {
@@ -70,7 +71,9 @@ function Overlay(): JSX.Element {
 
           <div className="h-[1px] w-auto mx-2 bg-gray-300" />
 
-          <div></div>
+          <div>
+            <ExplorationPanel />
+          </div>
         </motion.div>
       </div>
     </div>
