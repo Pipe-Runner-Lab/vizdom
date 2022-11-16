@@ -23,4 +23,5 @@ yarn-debug.log*
 yarn-error.log*
 
 .env
-./database/dev.db
+dev.db
+prod.db
