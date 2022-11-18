@@ -6,8 +6,9 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "cd src && conda run --no-capture-output -n vizdom python -u ./app.py",
-    "freeze": "conda env export > environment.yml && pip freeze > requirements.txt",
-    "setup": "conda env create -f ./environment.yml && pip install -r requirements.txt"
+    "pipeline": "cd src && conda run --no-capture-output -n vizdom python -u ./pipeline.py",
+    "freeze": "conda env export > environment.yml && pip3 freeze > requirements.txt",
+    "setup": "conda env create -f ./environment.yml && pip3 install -r requirements.txt"
   },
   "repository": {
     "type": "git",
