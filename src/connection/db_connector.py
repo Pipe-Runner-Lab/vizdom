@@ -19,7 +19,8 @@ class DBConnection:
                 CREATE TABLE IF NOT EXISTS covid (
                     iso_code TEXT, 
                     date TEXT, 
-                    new_cases REAL
+                    new_cases REAL,
+                    total_cases REAL
                 )
             ''')
         except Error as e:
