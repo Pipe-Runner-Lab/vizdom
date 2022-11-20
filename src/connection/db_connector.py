@@ -3,7 +3,7 @@ from sqlite3 import Error
 from singleton_decorator import singleton
 import pandas as pd
 from constants.paths import (PROD_DB_PATH, DEV_DB_PATH)
-
+from crawlers.url_crawlers import get_our_world_in_data_attributes
 
 @singleton
 class DBConnection:
@@ -14,13 +14,16 @@ class DBConnection:
             # TODO: Need to check thread safety (Add serialized mode?)
             self.connection = sqlite3.connect(DEV_DB_PATH, check_same_thread=False)
 
+            # table meta data
+            column_meta_data = ""
+            for key, value in get_our_world_in_data_attributes.items():
+                column_meta_data += f"{key} {value}, "
+
             # * Create tables
-            self.connection.execute('''
+            column_meta_data = column_meta_data.rstrip(', ')
+            self.connection.execute(f'''
                 CREATE TABLE IF NOT EXISTS covid (
-                    iso_code TEXT, 
-                    date TEXT, 
-                    new_cases REAL,
-                    total_cases REAL
+                    {column_meta_data}
                 )
             ''')
         except Error as e:

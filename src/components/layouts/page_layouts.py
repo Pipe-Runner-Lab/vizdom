@@ -1,4 +1,5 @@
 from dash import html
+from ..nav.nav import render_nav
 
 def three_splitter(main, right, bottom, id, **kwargs):
     return html.Div(
@@ -17,8 +18,16 @@ def three_splitter(main, right, bottom, id, **kwargs):
                 className="main-bottom-wrapper"
             ),
             html.Div(
-                right,
-                className="right"
+                [
+                    html.Div(
+                        render_nav()
+                    ),
+                    html.Div(
+                        right,
+                        className="right"
+                    )
+                ],
+                className="right-wrapper"
             ),
         ],
         className="three-splitter",

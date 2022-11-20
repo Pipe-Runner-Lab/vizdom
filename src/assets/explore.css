@@ -1,0 +1,12 @@
+.action-wrapper {
+  padding: 8px;
+}
+
+.main-graph, .bottom-graph {
+  height: 100%;
+}
+
+.scroll-graph {
+  height: 100%;
+  width: 100%;
+}

@@ -1,0 +1,8 @@
+.select {
+  max-height: 360px;
+  overflow-y: auto;
+}
+
+.select:focus {
+  box-shadow: none;
+}

@@ -9,14 +9,13 @@ The pipeline is as follows:
 """
 
 from connection.db_connector import DBConnection
-from crawlers.url_crawlers import get_our_world_in_data
-from filters.base_filters import fill_nans_by_interpolation, keep_columns_by_name
+from crawlers.url_crawlers import get_our_world_in_data, get_our_world_in_data_attributes
+from filters.base_filters import country_based_interpolation, keep_columns_by_name
 
 db = DBConnection()
 
 raw_data = get_our_world_in_data()
-filtered_data = keep_columns_by_name(raw_data, ["iso_code", "date", "new_cases", "total_cases"])
-filtered_data.set_index('date', inplace=True)
-filtered_data = fill_nans_by_interpolation(raw_data)
+filtered_data = keep_columns_by_name(raw_data, get_our_world_in_data_attributes.keys())
+interpolated_data = country_based_interpolation(filtered_data)
 # skipping processing
 db.populate_with_data_frame('covid', filtered_data)

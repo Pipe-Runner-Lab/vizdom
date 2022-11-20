@@ -1,0 +1,31 @@
+.three-splitter {
+  display: flex;
+  height: 100vh;
+  width: auto;
+}
+
+.three-splitter .main-bottom-wrapper {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  border-right: 1px solid #000;
+}
+
+.three-splitter .main-bottom-wrapper .main {
+  flex: 1;
+}
+
+.three-splitter .main-bottom-wrapper .bottom {
+  height: clamp(200px, 30%, 300px);
+  border-top: 1px solid #000;
+}
+
+.three-splitter .right-wrapper {
+  width: clamp(360px, 40%, 500px);
+  display: flex;
+  flex-direction: column;
+}
+
+.three-splitter .right-wrapper .right {
+  flex: 1;
+}
