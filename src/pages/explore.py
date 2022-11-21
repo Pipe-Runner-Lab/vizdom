@@ -46,12 +46,26 @@ layout = three_splitter(
 
 
 @callback(
-    Output("main-graph", "figure"),
     Output("bottom-graph", "figure"),
     Input("country-dropdown", "value"),
     Input("bottom-graph", "relayoutData")
 )
-def on_country_change(iso_code, relayoutData):
+def up_date_bottom_graph(iso_code, relayoutData):
+    relayoutData = {} if relayoutData is None else relayoutData
+    start_date = relayoutData.get("xaxis.range[0]", None)
+    end_date = relayoutData.get("xaxis.range[1]", None)
+
+    total_num_cases = get_total_number_of_cases_by_date(
+        start_date=start_date, end_date=end_date)
+
+    return render_line(total_num_cases, "date", "total_cases")
+
+@callback(
+    Output("main-graph", "figure"),
+    Input("country-dropdown", "value"),
+    Input("bottom-graph", "relayoutData"),
+)
+def update_all_graphs(iso_code, relayoutData):
     relayoutData = {} if relayoutData is None else relayoutData
     start_date = relayoutData.get("xaxis.range[0]", None)
     end_date = relayoutData.get("xaxis.range[1]", None)
@@ -61,7 +75,4 @@ def on_country_change(iso_code, relayoutData):
     else:
         country_agg_data = get_aggregated_total_cases_by_country(iso_code)
 
-    total_num_cases = get_total_number_of_cases_by_date(
-        start_date=start_date, end_date=end_date)
-
-    return render_map(country_agg_data, "total_cases"), render_line(total_num_cases, "date", "total_cases")
+    return render_map(country_agg_data, "total_cases")
