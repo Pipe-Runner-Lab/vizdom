@@ -9,5 +9,12 @@ def get_our_world_in_data():
 
 
 get_our_world_in_data_attributes = {
-    'iso_code': 'TEXT', 'date': "TEXT", 'new_cases': "REAL", 'total_cases': "REAL"
+    'iso_code': 'TEXT', 'date': "TEXT", 
+    'new_cases': "REAL", 'total_cases': "REAL", 
+    'new_deaths': "REAL", 'total_deaths': "REAL",
+    'new_vaccinations': "REAL", 'total_vaccinations': "REAL",
+    'people_vaccinated': "REAL", 'people_fully_vaccinated': "REAL",
+    'female_smokers': "REAL", 'male_smokers': "REAL",
+    'extreme_poverty': "REAL", 'life_expectancy': "REAL",
+    'population_density': "REAL"
 }
