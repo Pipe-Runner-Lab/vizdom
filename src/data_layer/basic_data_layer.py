@@ -17,7 +17,7 @@ def get_total_number_of_cases_by_date(start_date=None, end_date=None):
     max_points = map_value(range, 1, 1051, 236155, 2000)
     print(max_points, range)
     indices = np.round(np.linspace(0, df.shape[0] - 1, int(max_points))).astype(int)
-    return df
+    return df[indices]
 
 
 def get_list_of_countries():
