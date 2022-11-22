@@ -50,6 +50,12 @@ layout = three_splitter(
                 )
             ],
             className="action-wrapper"
+        ),
+        html.Div(
+            [
+
+            ],
+            className="action-wrapper"
         )
         # html.H1(children=dcc.Graph(
         # figure=render_line(data, "date", "new_cases")

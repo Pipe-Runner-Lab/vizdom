@@ -8,9 +8,10 @@ def render_nav():
                 f"{page['name']}", href=page["relative_path"]
             )
         ],
-            className="nav-item"
+            className="nav-item",
         )
         for page in page_registry.values()
     ],
         className="nav-container",
+        id="nav-container"
     )

@@ -1,5 +1,9 @@
 .action-wrapper {
   padding: 8px;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: var(--shadow-elevation-medium);
+  background: white;
 }
 
 .action-wrapper > * + * {

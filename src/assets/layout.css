@@ -43,15 +43,14 @@
   flex-direction: column;
 }
 
-.three-splitter .right-wrapper .right {
-  flex: 1;
+.three-splitter .right-wrapper .right > * + * {
+  margin-top: 8px;
 }
 
-.three-splitter .right-wrapper > * {
+.three-splitter .right-wrapper > *:first-child {
   border-radius: 8px;
   overflow: hidden;
   box-shadow: var(--shadow-elevation-medium);
-  background: white;
 }
 
 .three-splitter .right-wrapper > * + * {
