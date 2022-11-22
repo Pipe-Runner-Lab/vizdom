@@ -101,8 +101,8 @@ def update_all_graphs(iso_code, attribute, relayoutData):
         country_agg_data = get_aggregated_total_cases_by_country(iso_code)
 
     if iso_code == "All":
-        attribute_date = get_attribute(attribute)
+        attribute_date = get_attribute(attribute, start_date, end_date)
     else:
-        attribute_date = get_attribute(attribute, iso_code)
+        attribute_date = get_attribute(attribute, start_date, end_date, iso_code)
 
     return render_map(country_agg_data, "total_cases"), render_line(attribute_date, "date", attribute)

@@ -1,6 +1,5 @@
 from connection.db_connector import DBConnection
-from dateutil import parser
-import numpy as np
+from .util import resample_by_date_range, date_range, query_creator
 
 
 def get_aggregated_total_cases_by_country(iso_code=None):
@@ -10,39 +9,19 @@ def get_aggregated_total_cases_by_country(iso_code=None):
     return df
 
 
-def get_attribute(attribute, country=None):
-    if country is None:
-        return DBConnection().get_df(f'date, {attribute}', 'covid')
-    else:
-        return DBConnection().get_df(f'date, {attribute}', 'covid', f'iso_code = "{country}"')
-
+def get_attribute(attribute, start_date, end_date, iso_code=None):
+    range = date_range(start_date, end_date)
+    query = query_creator(iso_code=iso_code, start_date=start_date, end_date=end_date)
+    df = DBConnection().get_df(f'date, {attribute}', 'covid', query)
+    return resample_by_date_range(df, range)
 
 def get_total_number_of_cases_by_date(start_date=None, end_date=None):
     range = date_range(start_date, end_date)
     df = DBConnection().get_df('date, total_cases', 'covid',
-                               f'date BETWEEN "{start_date}" AND "{end_date}"' if start_date != None and end_date != None else None)
-
-    max_points = map_value(range, 1, 1051, 236155, 2000)
-    indices = np.round(np.linspace(
-        0, df.shape[0] - 1, int(max_points/5))).astype(int)
-    return df.iloc[indices]
+                               f'date BETWEEN "{start_date}" AND "{end_date}"' if start_date and end_date else None)
+    return resample_by_date_range(df, range)
 
 
 def get_list_of_countries():
     df = DBConnection().get_df('iso_code', 'covid')
     return df['iso_code'].unique().tolist()
-
-
-def date_range(start_date, end_date):
-    if start_date != None and end_date != None:
-        start_date = parser.parse(str(start_date)).date()
-        end_date = parser.parse(str(end_date)).date()
-        return abs(start_date-end_date).days
-    return 1051
-
-
-def map_value(in_v, in_min, in_max, out_min, out_max):           # (3)
-    """Helper method to map an input value (v_in)
-       between alternative max/min ranges."""
-    v = (in_v - in_min) * (out_max - out_min) / (in_max - in_min) + out_min
-    return v
