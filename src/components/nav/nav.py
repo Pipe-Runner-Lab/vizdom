@@ -1,5 +1,6 @@
 from dash import html, dcc, page_registry
 
+pages = page_registry.values()
 
 def render_nav():
     return html.Div([
@@ -10,7 +11,7 @@ def render_nav():
         ],
             className="nav-item",
         )
-        for page in page_registry.values()
+        for page in pages
     ],
         className="nav-container",
         id="nav-container"
