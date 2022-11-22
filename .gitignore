@@ -25,3 +25,5 @@ yarn-error.log*
 .env
 dev.db
 prod.db
+
+*__pycache__*
