@@ -2,6 +2,7 @@ import pandas as pd
 from dash import html, dcc, register_page, Input, Output, callback
 from components.map.map import render_map
 from components.line.line import render_line
+from components.line.line_compare import render_two_lines
 from components.layouts.page_layouts import three_splitter
 from crawlers.url_crawlers import get_our_world_in_data_attributes
 from data_layer.basic_data_layer import get_aggregated_total_cases_by_country, get_list_of_countries, get_total_number_of_cases_by_date, get_attribute
@@ -119,5 +120,4 @@ def update_all_graphs(iso_code, attribute, attribute_compare, relayoutData):
     else:
         attribute_compare_data = get_attribute(
             attribute_compare, start_date, end_date, iso_code)
-
-    return render_map(country_agg_data, "total_cases"), render_line(attribute_compare_data, "date", attribute_compare), render_line(attribute_data, "date", attribute)
+    return render_map(country_agg_data, "total_cases"), render_two_lines(attribute_data, attribute_compare_data, "date", attribute, attribute_compare)
