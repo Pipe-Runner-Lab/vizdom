@@ -13,6 +13,15 @@
 
 .three-splitter .main-bottom-wrapper .main {
   flex: 1;
+  display: flex;
+}
+
+.three-splitter .main-bottom-wrapper .main > * {
+  flex: 1;
+}
+
+.three-splitter .main-bottom-wrapper .main > * + * {
+  margin-left: 8px;
 }
 
 .three-splitter .main-bottom-wrapper .bottom {

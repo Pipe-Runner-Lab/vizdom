@@ -11,47 +11,45 @@ import dash_bootstrap_components as dbc
 countries = get_list_of_countries()
 
 # * Register route
-register_page(__name__, path="/analyse")
+register_page(__name__, path="/prediction")
 
-layout = html.Div()
-
-# layout = three_splitter(
-#     main=[
-#         dcc.Graph(
-#             figure={},
-#             id="main-graph-1",
-#             className="main-graph"
-#         ),
-#         dcc.Graph(
-#             figure={},
-#             id="main-graph-2",
-#             className="main-graph"
-#         )
-#     ],
-#     right=html.Div(children=[
-#         html.Div(
-#             dbc.Select(
-#                 options=[
-#                     {"value": "All", "label": "All"},
-#                     *[{"value": country, "label": country} for country in countries]
-#                 ],
-#                 value="All",
-#                 id="country-dropdown",
-#                 class_name="select"
-#             ),
-#             className="action-wrapper"
-#         )
-#         # html.H1(children=dcc.Graph(
-#         # figure=render_line(data, "date", "new_cases")
-#         # )),
-#     ]),
-#     bottom=dcc.Graph(
-#         figure={},
-#         id="bottom-graph",
-#         className="bottom-graph"
-#     ),
-#     id="explore-page"
-# )
+layout = three_splitter(
+    main=[
+        dcc.Graph(
+            figure={},
+            id="main-graph-1",
+            className="main-graph"
+        ),
+        dcc.Graph(
+            figure={},
+            id="main-graph-2",
+            className="main-graph"
+        )
+    ],
+    right=html.Div(children=[
+        html.Div(
+            dbc.Select(
+                options=[
+                    {"value": "All", "label": "All"},
+                    *[{"value": country, "label": country} for country in countries]
+                ],
+                value="All",
+                id="country-dropdown",
+                class_name="select"
+            ),
+            className="action-wrapper"
+        )
+        # html.H1(children=dcc.Graph(
+        # figure=render_line(data, "date", "new_cases")
+        # )),
+    ]),
+    bottom=dcc.Graph(
+        figure={},
+        id="bottom-graph",
+        className="bottom-graph"
+    ),
+    id="explore-page"
+)
 
 
 # @callback(
