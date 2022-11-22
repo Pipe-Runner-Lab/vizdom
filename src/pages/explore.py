@@ -28,34 +28,33 @@ layout = three_splitter(
             className="main-graph"
         )
     ],
-    right=html.Div(children=[
+    right=[
         html.Div(
-            dbc.Select(
-                options=[
-                    {"value": "All", "label": "All"},
-                    *[{"value": country, "label": country} for country in countries]
-                ],
-                value="All",
-                id="country-dropdown",
-                class_name="select"
-            ),
-            className="action-wrapper"
-        ),
-        html.Div(
-            dbc.Select(
-                options=[
-                    *[{"value": attributes, "label": attributes} for attributes in list_of_attributes]
-                ],
-                value="new_deaths",
-                id="attribute-dropdown",
-                class_name="select"
-            ),
+            [
+                dbc.Select(
+                    options=[
+                        {"value": "All", "label": "All"},
+                        *[{"value": country, "label": country} for country in countries]
+                    ],
+                    value="All",
+                    id="country-dropdown",
+                    class_name="select"
+                ),
+                dbc.Select(
+                    options=[
+                        *[{"value": attributes, "label": attributes} for attributes in list_of_attributes]
+                    ],
+                    value="new_deaths",
+                    id="attribute-dropdown",
+                    class_name="select"
+                )
+            ],
             className="action-wrapper"
         )
         # html.H1(children=dcc.Graph(
         # figure=render_line(data, "date", "new_cases")
         # )),
-    ]),
+    ],
     bottom=dcc.Graph(
         figure={},
         id="bottom-graph",
@@ -103,6 +102,7 @@ def update_all_graphs(iso_code, attribute, relayoutData):
     if iso_code == "All":
         attribute_date = get_attribute(attribute, start_date, end_date)
     else:
-        attribute_date = get_attribute(attribute, start_date, end_date, iso_code)
+        attribute_date = get_attribute(
+            attribute, start_date, end_date, iso_code)
 
     return render_map(country_agg_data, "total_cases"), render_line(attribute_date, "date", attribute)

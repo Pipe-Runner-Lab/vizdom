@@ -15,7 +15,7 @@ def three_splitter(main, right, bottom, id, **kwargs):
                         className="bottom"
                     ),
                 ],
-                className="main-bottom-wrapper"
+                className="left-wrapper"
             ),
             html.Div(
                 [

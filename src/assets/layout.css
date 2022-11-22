@@ -2,31 +2,39 @@
   display: flex;
   height: 100vh;
   width: auto;
+  background: #EFF5F5;
+  padding: 8px;
 }
 
-.three-splitter .main-bottom-wrapper {
+.three-splitter .left-wrapper {
   display: flex;
   flex-direction: column;
   flex: 1;
-  border-right: 1px solid #000;
+  margin-right: 8px;
 }
 
-.three-splitter .main-bottom-wrapper .main {
+.three-splitter .left-wrapper .main {
   flex: 1;
   display: flex;
+  margin-bottom: 8px;
 }
 
-.three-splitter .main-bottom-wrapper .main > * {
+.three-splitter .left-wrapper .main > * {
   flex: 1;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: var(--shadow-elevation-low);
 }
 
-.three-splitter .main-bottom-wrapper .main > * + * {
+.three-splitter .left-wrapper .main > * + * {
   margin-left: 8px;
 }
 
-.three-splitter .main-bottom-wrapper .bottom {
+.three-splitter .left-wrapper .bottom {
   height: clamp(200px, 30%, 300px);
-  border-top: 1px solid #000;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: var(--shadow-elevation-low);
 }
 
 .three-splitter .right-wrapper {
@@ -37,4 +45,15 @@
 
 .three-splitter .right-wrapper .right {
   flex: 1;
+}
+
+.three-splitter .right-wrapper > * {
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: var(--shadow-elevation-medium);
+  background: white;
+}
+
+.three-splitter .right-wrapper > * + * {
+  margin-top: 8px;
 }
