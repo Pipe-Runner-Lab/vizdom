@@ -9,6 +9,10 @@ def resample_by_date_range(df, range):
     indices = np.round(np.linspace(0, df.shape[0] - 1, int(max_points/4))).astype(int)
     return df.iloc[indices]
 
+def resample_by(df, denominator):
+    max_points = int(df.shape[0]/denominator)
+    indices = np.round(np.linspace(0, df.shape[0] - 1, max_points)).astype(int)
+    return df.iloc[indices]
 
 def date_range(start_date, end_date):
     if start_date != None and end_date != None:

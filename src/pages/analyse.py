@@ -1,12 +1,13 @@
-import pandas as pd
 from dash import html, dcc, register_page, Input, Output, callback
 from components.map.map import render_map
+from components.scatter.scatter import render_scatter
 from components.line.line import render_line
 from components.line.line_compare import render_two_lines
 from components.layouts.page_layouts import three_splitter
 from crawlers.url_crawlers import get_our_world_in_data_attributes
-from data_layer.basic_data_layer import get_aggregated_total_cases_by_country, get_list_of_countries, get_total_number_of_cases_by_date, get_attribute
+from data_layer.basic_data_layer import get_aggregated_total_cases_by_country, get_list_of_countries, get_total_number_of_cases_by_date, get_attribute_by_date_range, get_attribute
 import dash_bootstrap_components as dbc
+from data_layer.util import resample_by
 
 # * static data
 
@@ -33,10 +34,10 @@ layout = three_splitter(
         html.Div(
             [dbc.Select(
                 options=[
-                    {"value": "All", "label": "All"},
+                    {"value": "NOR", "label": "NOR"},
                     *[{"value": country, "label": country} for country in countries]
                 ],
-                value="All",
+                value="NOR",
                 id="a-country-dropdown",
                 class_name="select"
             ), 
@@ -44,16 +45,16 @@ layout = three_splitter(
                 options=[
                     *[{"value": attributes, "label": attributes} for attributes in list_of_attributes]
                 ],
-                value="new_deaths",
-                id="a-attribute-dropdown",
+                value="new_cases",
+                id="a-attribute1-dropdown",
                 class_name="select"
             ), 
             dbc.Select(
                 options=[
                     *[{"value": attributes, "label": attributes} for attributes in list_of_attributes]
                 ],
-                value="new_deaths",
-                id="a-attribute-compare-dropdown",
+                value="new_vaccinations",
+                id="a-attribute2-dropdown",
                 class_name="select"
             )],
             className="action-wrapper"
@@ -94,30 +95,43 @@ def up_date_bottom_graph(iso_code, relayoutData):
     Output("a-main-graph-1", "figure"),
     Output("a-main-graph-2", "figure"),
     Input("a-country-dropdown", "value"),
-    Input("a-attribute-dropdown", "value"),
-    Input("a-attribute-compare-dropdown", "value"),
+    Input("a-attribute1-dropdown", "value"),
+    Input("a-attribute2-dropdown", "value"),
     Input("a-bottom-graph", "relayoutData"),
 )
-def update_all_graphs(iso_code, attribute, attribute_compare, relayoutData):
+def update_all_graphs(iso_code, attribute_1, attribute_2, relayoutData):
     relayoutData = {} if relayoutData is None else relayoutData
     start_date = relayoutData.get("xaxis.range[0]", None)
     end_date = relayoutData.get("xaxis.range[1]", None)
 
-    if iso_code == "All":
-        country_agg_data = get_aggregated_total_cases_by_country()
-    else:
-        country_agg_data = get_aggregated_total_cases_by_country(iso_code)
+    # if iso_code == "All":
+    #     country_agg_data = get_aggregated_total_cases_by_country()
+    # else:
+    #     country_agg_data = get_aggregated_total_cases_by_country(iso_code)
 
     if iso_code == "All":
-        attribute_data = get_attribute(attribute, start_date, end_date)
+        attribute_data_l_1 = get_attribute_by_date_range(attribute_1, start_date, end_date)
     else:
-        attribute_data = get_attribute(
-            attribute, start_date, end_date, iso_code)
+        attribute_data_l_1 = get_attribute_by_date_range(attribute_1, start_date, end_date, iso_code)
 
     if iso_code == "All":
-        attribute_compare_data = get_attribute(
-            attribute_compare, start_date, end_date)
+        attribute_data_l_2 = get_attribute_by_date_range(attribute_2, start_date, end_date)
     else:
-        attribute_compare_data = get_attribute(
-            attribute_compare, start_date, end_date, iso_code)
-    return render_map(country_agg_data, "total_cases"), render_two_lines(attribute_data, attribute_compare_data, "date", attribute, attribute_compare)
+        attribute_data_l_2 = get_attribute_by_date_range(attribute_2, start_date, end_date, iso_code)
+    
+    if iso_code == "All":
+        attribute_data_s_1 = get_attribute(attribute_1)
+    else:
+        attribute_data_s_1 = get_attribute(attribute_1, iso_code)
+
+    if iso_code == "All":
+        attribute_data_s_2 = get_attribute(attribute_2)
+    else:
+        attribute_data_s_2 = get_attribute(attribute_2, iso_code)
+        
+    correlation = attribute_data_s_1[attribute_1].corr(attribute_data_l_2[attribute_2])
+    print(correlation)
+    attribute_data_s_1 = resample_by(attribute_data_s_1, 2)
+    attribute_data_s_2 = resample_by(attribute_data_s_2, 2)
+
+    return render_scatter(attribute_data_s_1, attribute_data_s_2, attribute_1, attribute_2), render_two_lines(attribute_data_l_1, attribute_data_l_2, "date", attribute_1, attribute_2)
