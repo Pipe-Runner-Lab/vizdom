@@ -6,3 +6,7 @@
 .select:focus {
   box-shadow: none;
 }
+
+/* .multi-select {
+  position: absolute;
+} */

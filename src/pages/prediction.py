@@ -48,7 +48,7 @@ layout = three_splitter(
         id="bottom-graph",
         className="bottom-graph"
     ),
-    id="explore-page"
+    id="prediction-page"
 )
 
 

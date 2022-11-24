@@ -10,7 +10,7 @@ from crawlers.url_crawlers import get_our_world_in_data_attributes
 # * static data
 
 countries = get_list_of_countries()
-list_of_attributes = get_our_world_in_data_attributes.keys()
+list_of_attributes = get_our_world_in_data_attributes.items()
 
 # * Register route
 register_page(__name__, path="/")
@@ -19,12 +19,12 @@ layout = three_splitter(
     main=[
         dcc.Graph(
             figure={},
-            id="main-graph-1",
+            id="explore-main-graph-1",
             className="main-graph"
         ),
         dcc.Graph(
             figure={},
-            id="main-graph-2",
+            id="explore-main-graph-2",
             className="main-graph"
         )
     ],
@@ -37,15 +37,14 @@ layout = three_splitter(
                         *[{"value": country, "label": country} for country in countries]
                     ],
                     value="All",
-                    id="country-dropdown",
+                    id="explore-country-dropdown",
                     class_name="select"
                 ),
                 dbc.Select(
-                    options=[
-                        *[{"value": attributes, "label": attributes} for attributes in list_of_attributes]
-                    ],
+                    options=[{"value": attributes, "label": attributes_info['label']}
+                             for attributes, attributes_info in list_of_attributes],
                     value="new_deaths",
-                    id="attribute-dropdown",
+                    id="explore-attribute-dropdown",
                     class_name="select"
                 )
             ],
@@ -53,27 +52,48 @@ layout = three_splitter(
         ),
         html.Div(
             [
-
+                html.Div(
+                    "Country Filter",
+                    className="title"
+                ),
+                dbc.Select(
+                    options=[{"value": "mean", "label": "Mean"}, {
+                        "value": "individual", "label": "Individual"}],
+                    value="mean",
+                    id="explore-aggregation-dropdown",
+                    class_name="select"
+                ),
+                dcc.Dropdown(
+                    options=[{"value": country, "label": country}
+                             for country in countries],
+                    multi=True,
+                    id="explore-country-filter",
+                    value=None
+                ),
+                dcc.Dropdown(
+                    options=[{"value": attributes, "label": attributes_info['label']}
+                             for attributes, attributes_info in list_of_attributes],
+                    multi=True,
+                    id="explore-attribute-filter",
+                    value=None
+                )
             ],
-            className="action-wrapper"
+            className="action-wrapper filter-panel"
         )
-        # html.H1(children=dcc.Graph(
-        # figure=render_line(data, "date", "new_cases")
-        # )),
     ],
     bottom=dcc.Graph(
         figure={},
-        id="bottom-graph",
+        id="explore-bottom-graph",
         className="bottom-graph"
     ),
-    id="explore-page"
+    id="explore-explore-page"
 )
 
 
 @callback(
-    Output("bottom-graph", "figure"),
-    Input("country-dropdown", "value"),
-    Input("bottom-graph", "relayoutData")
+    Output("explore-bottom-graph", "figure"),
+    Input("explore-country-dropdown", "value"),
+    Input("explore-bottom-graph", "relayoutData")
 )
 def up_date_bottom_graph(iso_code, relayoutData):
     relayoutData = {} if relayoutData is None else relayoutData
@@ -89,11 +109,11 @@ def up_date_bottom_graph(iso_code, relayoutData):
 
 
 @callback(
-    Output("main-graph-1", "figure"),
-    Output("main-graph-2", "figure"),
-    Input("country-dropdown", "value"),
-    Input("attribute-dropdown", "value"),
-    Input("bottom-graph", "relayoutData"),
+    Output("explore-main-graph-1", "figure"),
+    Output("explore-main-graph-2", "figure"),
+    Input("explore-country-dropdown", "value"),
+    Input("explore-attribute-dropdown", "value"),
+    Input("explore-bottom-graph", "relayoutData"),
 )
 def update_all_graphs(iso_code, attribute, relayoutData):
     relayoutData = {} if relayoutData is None else relayoutData

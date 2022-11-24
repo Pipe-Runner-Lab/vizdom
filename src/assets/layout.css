@@ -43,8 +43,16 @@
   flex-direction: column;
 }
 
+.three-splitter .right-wrapper .right {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
 .three-splitter .right-wrapper .right > * + * {
   margin-top: 8px;
+  display: flex;
+  flex-direction: column;
 }
 
 .three-splitter .right-wrapper > *:first-child {
@@ -55,4 +63,18 @@
 
 .three-splitter .right-wrapper > * + * {
   margin-top: 8px;
+}
+
+.filter-panel {
+  flex: 1;
+}
+
+.title {
+  display: flex;
+  height: 48px;
+  align-items: center;
+  justify-content: center;
+  background: #A0E4CB;
+  border-radius: 8px;
+  font-weight: 600;
 }
