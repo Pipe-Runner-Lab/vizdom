@@ -1,4 +1,5 @@
 from connection.db_connector import DBConnection
+import pandas as pd
 from .util import resample_by_date_range, resample_by, date_range, query_creator
 
 
@@ -27,5 +28,12 @@ def get_total_number_of_cases_by_date(iso_code=None, start_date=None, end_date=N
 
 
 def get_list_of_countries():
-    df = DBConnection().get_df('iso_code', 'covid')
-    return df['iso_code'].unique().tolist()
+    df = DBConnection().get_df('iso_code, location', 'covid')
+    df = df.groupby(['location', 'iso_code']).size().reset_index()
+    dict = {}
+    for iso_code, location in zip(df.iso_code, df.location):
+        dict[iso_code] = {"label": location}
+    for country in dict:
+        print(print(dict.get(country, {}).get('label')))
+    return dict
+

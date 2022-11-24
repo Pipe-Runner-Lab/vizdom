@@ -10,12 +10,13 @@ The pipeline is as follows:
 
 from connection.db_connector import DBConnection
 from crawlers.url_crawlers import get_our_world_in_data, get_our_world_in_data_attributes
-from filters.base_filters import country_based_interpolation, keep_columns_by_name
+from filters.base_filters import country_based_interpolation, keep_columns_by_name, drop_rows_with_OWID
 
 db = DBConnection()
 
 raw_data = get_our_world_in_data()
-filtered_data = keep_columns_by_name(raw_data, get_our_world_in_data_attributes.keys())
+filtered_data = drop_rows_with_OWID(raw_data)
+filtered_data = keep_columns_by_name(filtered_data, get_our_world_in_data_attributes.keys())
 interpolated_data = country_based_interpolation(filtered_data)
 # skipping processing
 db.populate_with_data_frame('covid', filtered_data)

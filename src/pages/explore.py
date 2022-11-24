@@ -34,7 +34,7 @@ layout = three_splitter(
                 dbc.Select(
                     options=[
                         {"value": "All", "label": "All"},
-                        *[{"value": country, "label": country} for country in countries]
+                        *[{"value": country, "label": countries.get(country, {}).get('label')} for country in countries]
                     ],
                     value="All",
                     id="explore-country-dropdown",
@@ -64,8 +64,7 @@ layout = three_splitter(
                     class_name="select"
                 ),
                 dcc.Dropdown(
-                    options=[{"value": country, "label": country}
-                             for country in countries],
+                    options=[{"value": country, "label": countries.get(country, {}).get('label')} for country in countries],
                     multi=True,
                     id="explore-country-filter",
                     value=None
@@ -116,6 +115,7 @@ def up_date_bottom_graph(iso_code, relayoutData):
     Input("explore-bottom-graph", "relayoutData"),
 )
 def update_all_graphs(iso_code, attribute, relayoutData):
+    print(iso_code)
     relayoutData = {} if relayoutData is None else relayoutData
     start_date = relayoutData.get("xaxis.range[0]", None)
     end_date = relayoutData.get("xaxis.range[1]", None)
