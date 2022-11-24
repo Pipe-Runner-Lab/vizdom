@@ -35,7 +35,7 @@ layout = three_splitter(
             [dbc.Select(
                 options=[
                     {"value": "NOR", "label": "NOR"},
-                    *[{"value": country, "label": country} for country in countries]
+                    *[{"value": country, "label": countries.get(country, {}).get('label')} for country in countries]
                 ],
                 value="NOR",
                 id="analyse-country-dropdown",

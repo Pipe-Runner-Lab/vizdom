@@ -4,6 +4,14 @@ Filters are responsible for dropping unnecessary columns and filling NaNs.
 import pandas as pd
 pd.options.mode.chained_assignment = None  # type: ignore # default='warn'
 
+def drop_rows_with_OWID(data):
+    data['is_continent'] = data['iso_code'].str.startswith('OWID')
+    data = data[data['is_continent'] == False]
+    del data['is_continent']
+    return data
+        
+        
+    
 
 def remove_columns_or_rows_with_nan(data, axis, how):
     """Removes NaNs from the given axis and returns the data as a dataframe.

@@ -10,6 +10,7 @@ def get_our_world_in_data():
 
 get_our_world_in_data_attributes = {
     'iso_code': {"type": 'TEXT', "label": 'ISO Code'},
+    'continent': {"type": 'TEXT', "label": 'Continent'},
     'location': {"type": "TEXT", "label": "Location"},
     'date': {"type": "TEXT", "label": "Date"},
     'new_cases': {"type": "REAL", "label": "New Cases"},
