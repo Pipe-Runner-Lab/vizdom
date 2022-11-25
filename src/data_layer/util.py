@@ -32,7 +32,10 @@ def query_creator(iso_code=None, start_date=None, end_date=None):
     query = []
     
     if iso_code:
-        query.append(f'iso_code = "{iso_code}"')
+        if isinstance(iso_code, list):
+            query.append(f"iso_code IN {tuple(iso_code)}")
+        else:
+            query.append(f'iso_code = "{iso_code}"')
         
     if start_date and end_date:
         query.append(f'date BETWEEN "{start_date}" AND "{end_date}"')
