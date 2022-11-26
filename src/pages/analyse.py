@@ -172,7 +172,7 @@ def update_all_graphs(iso_code, attribute_1, attribute_2, aggregation_type, rela
         attribute_date_2 = get_attribute(attribute_2, start_date, end_date, iso_code, aggregation_type)
         
         if aggregation_type == "mean":
-            fig2 = render_bar(attribute_date_1, "location", attribute_1)
+            fig2 = render_bar(attribute_date_1, attribute_1, "location",attribute_date_2, attribute_2)
             fig1 = go.Figure()
             
         else:
