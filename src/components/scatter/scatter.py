@@ -1,13 +1,17 @@
 import plotly.graph_objects as go 
+from crawlers.url_crawlers import get_our_world_in_data_attributes
 
-def render_scatter(df1, df2, y_column_1, y_column_2): 
+def render_scatter(df1, df2, x_column, y_column, country): 
+    attr1_label = get_our_world_in_data_attributes[x_column]["label"]
+    attr2_label = get_our_world_in_data_attributes[y_column]["label"]
     fig = go.Figure()
     fig.add_trace(go.Scatter(
-                  x = df1[y_column_1],
-                  y = df2[y_column_2],
+                  x = df1[x_column],
+                  y = df2[y_column],
                   mode = 'markers', 
-                 ),)
+                 ))
     
-    fig.update_xaxes(title_text=f"{y_column_1}")
-    fig.update_yaxes(title_text=f"{y_column_2}")
+    fig.update_layout(title_text=f'Correlation between attributes for {country}', title_x=0.5)
+    fig.update_xaxes(title_text=attr1_label)
+    fig.update_yaxes(title_text=attr2_label)
     return fig

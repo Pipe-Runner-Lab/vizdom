@@ -4,9 +4,10 @@ import numpy as np
 Utility 
 
 """
-def resample_by_date_range(df, range):
+def resample_by_date_range(df, start_date, end_date):
+    range = date_range(start_date, end_date)
     max_points = map_value(range, 1, 1051, 236617, 2000)
-    indices = np.round(np.linspace(0, df.shape[0] - 1, int(max_points/4))).astype(int)
+    indices = np.round(np.linspace(0, df.shape[0] - 1, int(max_points-500))).astype(int)
     return df.iloc[indices]
 
 def resample_by(df, denominator):
