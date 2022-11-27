@@ -20,7 +20,7 @@ def render_two_lines(df1, df2, x_column, y_column_1, y_column_2, country, color_
                   name = attr2_label),
                   secondary_y=True)
     fig.update_traces(showlegend=True)
-    fig.update_layout(title_text=f'Compare two attributes for {country}', title_x=0.5, legend = dict(font = dict(size = 8)))
+    # fig.update_layout(title_text=f'Compare two attributes for {country}', title_x=0.5, legend = dict(font = dict(size = 8)))
     fig.update_xaxes(title_text=f"{date_label}")
     fig.update_yaxes(title_text=f"{attr1_label}", secondary_y=False)
     fig.update_yaxes(title_text=f"{attr2_label}", secondary_y=True)

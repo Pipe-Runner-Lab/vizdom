@@ -3,6 +3,7 @@ from dash import html, dcc, register_page, Input, Output, callback, State
 from components.bubble.bubble import render_bubbles
 from components.scatter.scatter import render_scatter
 from components.line.line import render_line
+from components.line.line_countries_attributes import render_country_lines
 from components.bar.bar import render_bar
 from components.line.line_compare import render_two_lines
 from components.layouts.page_layouts import three_splitter
@@ -178,7 +179,7 @@ def update_all_graphs(iso_code, attribute_1, attribute_2, aggregation_type, rela
         else:
             attribute_date_1[attribute_2] = attribute_date_2[attribute_2]
             # fig1 = render_bubbles(attribute_date_1, attribute_1, attribute_2)
-            fig2 = render_line(attribute_date_1, "date", attribute_1, "location")
+            fig2 = render_country_lines(attribute_date_1, attribute_1, attribute_2, "date", "location")
             fig1 = go.Figure()
     else:
         attribute_data_l_1 = get_attribute(attribute_1, start_date, end_date, iso_code, aggregation_type)
