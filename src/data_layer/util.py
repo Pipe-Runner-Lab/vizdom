@@ -4,9 +4,11 @@ import numpy as np
 Utility 
 
 """
-def resample_by_date_range(df, range):
-    max_points = map_value(range, 1, 1051, 236617, 2000)
-    indices = np.round(np.linspace(0, df.shape[0] - 1, int(max_points/4))).astype(int)
+def resample_by_date_range(df, start_date, end_date):
+    range = date_range(start_date, end_date)
+    
+    max_points = map_value(range, 1, 1051, 10000, 1000)
+    indices = np.round(np.linspace(0, df.shape[0] - 1, int(max_points))).astype(int)
     return df.iloc[indices]
 
 def resample_by(df, denominator):
@@ -32,6 +34,9 @@ def query_creator(iso_code=None, start_date=None, end_date=None):
     query = []
     
     if iso_code:
+        if isinstance(iso_code, list) and len(iso_code) == 1:
+            iso_code = iso_code[0]
+        
         if isinstance(iso_code, list):
             query.append(f"iso_code IN {tuple(iso_code)}")
         else:

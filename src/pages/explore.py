@@ -163,7 +163,7 @@ def update_all_graphs(iso_code, attribute, aggregation_type, relayoutData, filte
         attribute_date = get_attribute(attribute, start_date, end_date, iso_code, aggregation_type)
 
         if aggregation_type == "mean":
-            fig2 = render_bar(attribute_date, "location", attribute)
+            fig2 = render_bar(attribute_date, "location", attribute, None, None)
         else:
             fig2 = render_line(attribute_date, "date", attribute, "location")
 
