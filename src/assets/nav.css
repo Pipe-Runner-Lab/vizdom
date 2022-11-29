@@ -3,19 +3,28 @@
   display: flex;
 }
 
+.nav-container > * + * {
+  margin-left: 8px;
+}
+
 .nav-container .nav-item {
   flex: 1;
-  background-color: #393E46;
+  width: 120px;
 }
 
 .nav-container .nav-item a {
   display: block;
   height: 100%;
+  width: 100%;
   text-align: center;
   line-height: 42px;
   vertical-align: middle;
   text-decoration: none;
   color: #fff;
+  padding-inline: 8px;
+  border-radius: 4px;
+  overflow: hidden;
+  background-color: #393E46;
 }
 
 .nav-container .nav-item a:hover {

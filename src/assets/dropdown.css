@@ -7,6 +7,18 @@
   box-shadow: none;
 }
 
+.attribute-selectors{
+  display: flex;
+}
+
+.attribute-selectors > * {
+  flex: 1;
+}
+
+.attribute-selectors > * + * {
+  margin-left: 4px;
+}
+
 /* .multi-select {
   position: absolute;
 } */

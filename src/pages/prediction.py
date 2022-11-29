@@ -2,7 +2,7 @@ import plotly.express as px
 from dash import html, dcc, register_page, Input, Output, callback
 from components.map.map import render_map
 from components.line.line import render_line
-from components.layouts.page_layouts import three_splitter
+from components.layouts.page_layouts import three_splitter_v1
 from data_layer.basic_data_layer import get_aggregated_total_cases_by_country, get_list_of_countries, get_total_number_of_cases_by_date
 import dash_bootstrap_components as dbc
 
@@ -11,9 +11,9 @@ import dash_bootstrap_components as dbc
 countries = get_list_of_countries()
 
 # * Register route
-register_page(__name__, path="/prediction")
+register_page(__name__, path="/predict")
 
-layout = three_splitter(
+layout = three_splitter_v1(
     main=[
         dcc.Graph(
             figure={},

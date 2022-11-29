@@ -4,7 +4,7 @@ from dash import html, dcc, register_page, Input, Output, callback, State
 from components.map.map import render_map
 from components.line.line import render_line
 from components.bar.bar import render_bar
-from components.layouts.page_layouts import three_splitter
+from components.layouts.page_layouts import three_splitter_v1
 from data_layer.basic_data_layer import get_aggregated_total_cases_by_country, get_list_of_countries, get_total_number_of_cases_by_date, get_attribute
 import dash_bootstrap_components as dbc
 from crawlers.url_crawlers import get_our_world_in_data_attributes
@@ -16,7 +16,7 @@ list_of_attributes = get_our_world_in_data_attributes.items()
 # * Register route
 register_page(__name__, path="/")
 
-layout = three_splitter(
+layout = three_splitter_v1(
     main=[
         dcc.Graph(
             figure={},
@@ -32,6 +32,14 @@ layout = three_splitter(
     right=[
         html.Div(
             [
+                html.Div(
+                    "Selector Panel",
+                    className="title"
+                ),
+                html.Div(
+                    "Country",
+                    className="sub-title"
+                ),
                 dbc.Select(
                     options=[
                         {"value": "All", "label": "All"},
@@ -41,21 +49,39 @@ layout = three_splitter(
                     id="explore-country-dropdown",
                     class_name="select"
                 ),
-                dbc.Select(
-                    options=[{"value": attributes, "label": attributes_info['label']}
-                             for attributes, attributes_info in list_of_attributes],
-                    value="new_deaths",
-                    id="explore-attribute-dropdown",
-                    class_name="select"
-                ),
-                dbc.Select(
-                    options=[
-                        {"value": "mean", "label": "Mean"},
-                        {"value": "individual", "label": "Individual"}
+                html.Div(
+                    [
+                        html.Div(
+                            "Attribute",
+                            className="sub-title"
+                        ),
+                        html.Div(
+                            "Aggregation",
+                            className="sub-title"
+                        ),
                     ],
-                    value="individual",
-                    id="explore-aggregation-dropdown",
-                    class_name="select"
+                    className="attribute-selectors"
+                ),
+                html.Div(
+                    [
+                        dbc.Select(
+                            options=[{"value": attributes, "label": attributes_info['label']}
+                                     for attributes, attributes_info in list_of_attributes],
+                            value="new_deaths",
+                            id="explore-attribute-dropdown",
+                            class_name="select"
+                        ),
+                        dbc.Select(
+                            options=[
+                                {"value": "mean", "label": "Mean"},
+                                {"value": "none", "label": "None"}
+                            ],
+                            value="none",
+                            id="explore-aggregation-dropdown",
+                            class_name="select"
+                        ),
+                    ],
+                    className="attribute-selectors"
                 ),
             ],
             className="action-wrapper"
@@ -63,11 +89,9 @@ layout = three_splitter(
         html.Div(
             [
                 html.Div(
-                    "Country Filter",
+                    "Filter Panel",
                     className="title"
                 ),
-                dbc.Alert("Filters applied only if 'All' countries are selected",
-                          color="warning", class_name="alert"),
                 dcc.Dropdown(
                     options=[{"value": country, "label": countries.get(
                         country, {}).get('label')} for country in countries],
@@ -92,7 +116,8 @@ layout = three_splitter(
 
                 dcc.Store(id='explore-filter-data')
             ],
-            className="action-wrapper filter-panel"
+            className="action-wrapper filter-panel",
+            id="export-filter-panel"
         )
     ],
     bottom=dcc.Graph(
@@ -102,6 +127,20 @@ layout = three_splitter(
     ),
     id="explore-explore-page"
 )
+
+# dbc.Alert("Filters applied only if 'All' countries are selected",
+#                           color="warning", class_name="alert"),
+
+
+@ callback(
+    Output("export-filter-panel", "style"),
+    Input("explore-country-dropdown", "value")
+)
+def toggle_filter_panel(iso_code):
+    if iso_code == "All":
+        return {"display": "block"}
+    else:
+        return {"display": "none"}
 
 
 @ callback(
@@ -159,19 +198,24 @@ def update_all_graphs(iso_code, attribute, aggregation_type, relayoutData, filte
         # country filter only checked if ISO Code is All
         filter_data = json.loads(filter_data)
         iso_code = filter_data.get("countries", None)
-        country_agg_data = get_aggregated_total_cases_by_country(start_date, end_date, iso_code)
-        attribute_date = get_attribute(attribute, start_date, end_date, iso_code, aggregation_type)
+        country_agg_data = get_aggregated_total_cases_by_country(
+            start_date, end_date, iso_code)
+        attribute_date = get_attribute(
+            attribute, start_date, end_date, iso_code, aggregation_type)
 
         if aggregation_type == "mean":
-            fig2 = render_bar(attribute_date, "location", attribute, None, None)
+            fig2 = render_bar(attribute_date, "location",
+                              attribute, None, None)
         else:
             fig2 = render_line(attribute_date, "date", attribute, "location")
 
-        fig1= render_map(country_agg_data, "total_cases")
+        fig1 = render_map(country_agg_data, "total_cases")
     else:
-        country_agg_data = get_aggregated_total_cases_by_country(start_date, end_date, iso_code)
+        country_agg_data = get_aggregated_total_cases_by_country(
+            start_date, end_date, iso_code)
         attribute_date = get_attribute(
             attribute, start_date, end_date, iso_code)
-        fig1, fig2 = render_map(country_agg_data, "total_cases"), render_line(attribute_date, "date", attribute)
+        fig1, fig2 = render_map(country_agg_data, "total_cases"), render_line(
+            attribute_date, "date", attribute)
 
     return fig1, fig2
