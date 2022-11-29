@@ -26,5 +26,22 @@ def render_bar(df1, y_column_1, x_column, df2=None, y_column_2=None, color_colum
                     x_column: get_our_world_in_data_attributes[x_column]["label"], 
                     y_column_1: get_our_world_in_data_attributes[y_column_1]["label"]})
 
-    
+def render_corr_bar(df, attr_1, attr_2):
+    attr1_label = get_our_world_in_data_attributes[attr_1]["label"]
+    attr2_label = get_our_world_in_data_attributes[attr_2]["label"]
+    color_1 = 'red'
+    color_2 = 'blue'
+    colors = [color_1 if (df['correlation'][idx] < 0.2) and (df['correlation'][idx] > -0.2) else color_2 for idx in range(len(df))]
+    fig = go.Figure(data=[go.Bar(x=df['correlation'], y=df['location'],
+                      marker=dict(color=colors),
+                      width=1,
+                      orientation='h')])
+    fig.update_layout(title=f"Correlation between {attr1_label} and {attr2_label}",
+                      yaxis={'categoryorder':'total ascending'},
+                      xaxis_title="Correlation, rho",
+                      yaxis_title="Location",
+                      barmode='stack',
+                      title_x=0.5,
+                      title_y=0.89)
+    return fig
     

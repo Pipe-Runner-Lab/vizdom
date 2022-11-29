@@ -4,7 +4,7 @@ from components.bubble.bubble import render_bubbles
 from components.scatter.scatter import render_scatter
 from components.line.line import render_line
 from components.line.line_countries_attributes import render_country_lines
-from components.bar.bar import render_bar
+from components.bar.bar import render_bar, render_corr_bar
 from components.line.line_compare import render_two_lines
 from components.layouts.page_layouts import three_splitter
 from crawlers.url_crawlers import get_our_world_in_data_attributes
@@ -182,10 +182,9 @@ def update_all_graphs(iso_code, attribute_1, attribute_2, aggregation_type, rela
             attribute_date_1[attribute_2] = attribute_date_2[attribute_2]
             correlation = compute_corr_two_attributes(attribute_date_1, attribute_1, attribute_2)
             df = pd.DataFrame (correlation , columns = ['location', 'correlation', 'attribute_1', 'attribute_2'])
-            print(df)
             # fig1 = render_bubbles(attribute_date_1, attribute_1, attribute_2)
             fig2 = render_country_lines(attribute_date_1, attribute_1, attribute_2, "date", "location")
-            fig1 = go.Figure()
+            fig1 = render_corr_bar(df, attribute_1, attribute_2)
     else:
         fig1 = None
         fig2 = None

@@ -28,9 +28,6 @@ def render_country_lines(data, y_column_1, y_column_2, x_column, country, color_
                   line={'dash': 'solid', 'color': color},
                   name = f"{country}, {attr2_label}"),
                   secondary_y=True)
-    # fig.update_traces(marker=dict(color='location'))
-    # fig.update_traces(showlegend=True)
-    # fig.update_layout(title_text=f'Compare two attributes for {country}', title_x=0.5, legend = dict(font = dict(size = 8)))
     fig.update_layout(legend=dict(
                       orientation="h",
                       yanchor="bottom",
