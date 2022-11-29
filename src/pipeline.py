@@ -16,7 +16,8 @@ db = DBConnection()
 
 raw_data = get_our_world_in_data()
 filtered_data = drop_rows_with_OWID(raw_data)
-filtered_data = keep_columns_by_name(filtered_data, get_our_world_in_data_attributes.keys())
 interpolated_data = country_based_interpolation(filtered_data)
+remaining_data = keep_columns_by_name(interpolated_data, get_our_world_in_data_attributes.keys())
+print(remaining_data)
 # skipping processing
-db.populate_with_data_frame('covid', filtered_data)
+db.populate_with_data_frame('covid', remaining_data)

@@ -18,7 +18,7 @@ def render_country_lines(data, y_column_1, y_column_2, x_column, country, color_
                   y = country_data[y_column_1],
                   mode = 'lines',
                   line={'dash': 'solid', 'color': color},
-                  name = f"{country} {attr1_label}"),
+                  name = f"{country}, {attr1_label}"),
                   secondary_y=False)
         fig.add_trace(go.Scatter(
                   x = country_data[x_column],
@@ -26,11 +26,18 @@ def render_country_lines(data, y_column_1, y_column_2, x_column, country, color_
                   mode = 'lines',
                   opacity=0.5,
                   line={'dash': 'solid', 'color': color},
-                  name = f"{country} {attr2_label}"),
+                  name = f"{country}, {attr2_label}"),
                   secondary_y=True)
     # fig.update_traces(marker=dict(color='location'))
     # fig.update_traces(showlegend=True)
     # fig.update_layout(title_text=f'Compare two attributes for {country}', title_x=0.5, legend = dict(font = dict(size = 8)))
+    fig.update_layout(legend=dict(
+                      orientation="h",
+                      yanchor="bottom",
+                      y=1.02,
+                      xanchor="right",
+                      x=1
+                      ))
     fig.update_xaxes(title_text=f"{date_label}")
     fig.update_yaxes(title_text=f"{attr1_label}", secondary_y=False)
     fig.update_yaxes(title_text=f"{attr2_label}", secondary_y=True)

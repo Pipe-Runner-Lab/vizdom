@@ -8,9 +8,10 @@ from components.bar.bar import render_bar
 from components.line.line_compare import render_two_lines
 from components.layouts.page_layouts import three_splitter
 from crawlers.url_crawlers import get_our_world_in_data_attributes
-from data_layer.basic_data_layer import get_aggregated_total_cases_by_country, get_list_of_countries, get_total_number_of_cases_by_date, get_attribute
+from data_layer.basic_data_layer import compute_corr_two_attributes, get_list_of_countries, get_total_number_of_cases_by_date, get_attribute
 import dash_bootstrap_components as dbc
 import plotly.graph_objects as go
+import pandas as pd
 
 # * static data
 
@@ -172,19 +173,25 @@ def update_all_graphs(iso_code, attribute_1, attribute_2, aggregation_type, rela
         attribute_date_1 = get_attribute(attribute_1, start_date, end_date, iso_code, aggregation_type)
         attribute_date_2 = get_attribute(attribute_2, start_date, end_date, iso_code, aggregation_type)
         
+        
         if aggregation_type == "mean":
             fig2 = render_bar(attribute_date_1, attribute_1, "location",attribute_date_2, attribute_2)
             fig1 = go.Figure()
             
         else:
             attribute_date_1[attribute_2] = attribute_date_2[attribute_2]
+            correlation = compute_corr_two_attributes(attribute_date_1, attribute_1, attribute_2)
+            df = pd.DataFrame (correlation , columns = ['location', 'correlation', 'attribute_1', 'attribute_2'])
+            print(df)
             # fig1 = render_bubbles(attribute_date_1, attribute_1, attribute_2)
             fig2 = render_country_lines(attribute_date_1, attribute_1, attribute_2, "date", "location")
             fig1 = go.Figure()
     else:
-        attribute_data_l_1 = get_attribute(attribute_1, start_date, end_date, iso_code, aggregation_type)
-        attribute_data_l_2 = get_attribute(attribute_2, start_date, end_date, iso_code, aggregation_type)
-        location = attribute_data_l_1['location'].iloc[0]
-        fig1 = render_scatter(attribute_data_l_1, attribute_data_l_2, attribute_1, attribute_2, location)
-        fig2 = render_two_lines(attribute_data_l_1, attribute_data_l_2, "date", attribute_1, attribute_2, location)
+        fig1 = None
+        fig2 = None
+        if aggregation_type != "mean":
+            attribute_data_l_1 = get_attribute(attribute_1, start_date, end_date, iso_code, aggregation_type)
+            attribute_data_l_2 = get_attribute(attribute_2, start_date, end_date, iso_code, aggregation_type)
+            fig1 = render_scatter(attribute_data_l_1, attribute_data_l_2, attribute_1, attribute_2)
+            fig2 = render_two_lines(attribute_data_l_1, attribute_data_l_2, "date", attribute_1, attribute_2)
     return fig1, fig2
