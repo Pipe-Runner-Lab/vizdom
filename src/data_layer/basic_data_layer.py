@@ -72,8 +72,6 @@ def compute_corr_two_attributes(attribute_1, attribute_2, start_date=None, end_d
     corr_matrix = []
     for country in unique_countries:
         data = df1[df1.location == country]
-        print(data)
-
         corr = pearsonr(data[attribute_1], data[attribute_2])
         corr_matrix.append([country, round(corr[0], 3)])
     data_corr = pd.DataFrame(corr_matrix, columns=[
