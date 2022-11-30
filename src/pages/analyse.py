@@ -445,7 +445,6 @@ def data_bars(column):
                 )
             )
         elif max_bound <= strong_point1 and max_bound <= weak_point1:
-            print(max_bound)
             background = (
                 """
                     linear-gradient(90deg,    
