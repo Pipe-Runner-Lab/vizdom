@@ -369,5 +369,3 @@ def update_all_graphs(iso_code, attribute_1, attribute_2, aggregation_type, rela
         'textAlign': 'left'
     }]
 
-
-

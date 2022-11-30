@@ -139,6 +139,6 @@
   margin-top: 8px;
 }
 
-.filter-advanced-error-container {
+.filter-advanced-error-container, .filter-advanced-success-container {
   flex: 1;
 }
