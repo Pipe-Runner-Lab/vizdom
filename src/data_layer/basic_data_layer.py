@@ -4,10 +4,37 @@ import pandas as pd
 from .util import resample_by_date_range, query_creator
 from scipy.stats.stats import pearsonr
 
+def get_filtered_countries(iso_code, attribute_conditions):
+    query = query_creator(iso_code=iso_code)
+    attributes_to_check = [attribute for attribute, condition in attribute_conditions]
+    df = DBConnection().get_df(f'iso_code, {(", ").join(attributes_to_check)}', 'covid', query)
+    df = df.groupby(['iso_code']).mean().reset_index()
+
+    for filter in attribute_conditions:
+        attribute = filter[0]
+        conditions = filter[1]
+        
+        for condition in conditions:
+            if condition['type'] == 'gt':
+                df = df[df[attribute] > float(condition['value'])]
+            elif condition['type'] == 'lt':
+                df = df[df[attribute] < float(condition['value'])]
+            elif condition['type'] == 'eq':
+                df = df[df[attribute] == float(condition['value'])]
+            elif condition['type'] == 'gte':
+                df = df[df[attribute] >= float(condition['value'])]
+            elif condition['type'] == 'lte':
+                df = df[df[attribute] <= float(condition['value'])]
+            elif condition['type'] == 'neq':
+                df = df[df[attribute] != float(condition['value'])]
+    
+    return df["iso_code"].unique().tolist()
+
+
 def get_aggregated_total_cases_by_country(start_date=None, end_date=None, iso_code=None):
     query = query_creator(iso_code=iso_code, start_date=start_date, end_date=end_date)
-    df = DBConnection().get_df('iso_code, total_cases', 'covid', query)
-    df = df.groupby(['iso_code']).sum().reset_index()
+    df = DBConnection().get_df('iso_code, total_cases, location', 'covid', query)
+    df = df.groupby(['iso_code', 'location']).sum().reset_index()
     return df
 
 

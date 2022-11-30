@@ -33,7 +33,7 @@ def three_splitter_v1(main, right, bottom, id, **kwargs):
                         ),
                         html.Div(
                             bottom,
-                            className="bottom"
+                            className="bottom",
                         ),
                     ],
                     className="left-wrapper"

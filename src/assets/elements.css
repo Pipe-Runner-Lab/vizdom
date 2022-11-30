@@ -1,0 +1,66 @@
+.action-wrapper {
+  padding: 8px;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: var(--shadow-elevation-low);
+  background: white;
+}
+
+.action-wrapper > * + * {
+  margin-top: 8px;
+}
+
+.main-graph, .bottom-graph {
+  height: 100%;
+}
+
+.scroll-graph {
+  height: 100%;
+  width: 100%;
+}
+
+.card {
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: var(--shadow-elevation-low);
+  background: #fff;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.card > div {
+  height: 100%;
+  width: 100%;
+}
+
+.title {
+  display: flex;
+  height: 42px;
+  align-items: center;
+  justify-content: center;
+  background: #8BBCCC;
+  border-radius: 8px;
+  font-weight: 600;
+}
+
+.sub-title {
+  display: flex;
+  height: 12px;
+  align-items: center;
+  font-size: 12px;
+  color: #5F6F94;
+}
+
+.alert{
+  margin-bottom: 0px;
+  font-size: 12px;
+  padding-block: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.table-container {
+  padding: 8px;
+}
