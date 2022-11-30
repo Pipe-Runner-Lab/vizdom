@@ -177,7 +177,7 @@ layout = three_splitter_v1(
 )
 def toggle_filter_panel(iso_code):
     if iso_code == "All":
-        return {"display": "block"}
+        return {"display": "flex"}
     else:
         return {"display": "none"}
 
@@ -202,7 +202,7 @@ def update_advanced_filter(attributes, children):
     State("explore-attribute-filter", "value"),
     State({'type': 'filter-input', 'index': ALL}, 'value')
 )
-def up_date_filter(n_clicks, countries, attribute, filter_expressions):
+def update_filter(n_clicks, countries, attribute, filter_expressions):
     error_in = []
     filter_data = []
     error_block = None
