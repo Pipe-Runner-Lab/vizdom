@@ -10,12 +10,13 @@ The pipeline is as follows:
 
 from connection.db_connector import DBConnection
 from crawlers.url_crawlers import get_our_world_in_data, get_our_world_in_data_attributes
-from filters.base_filters import country_based_interpolation, keep_columns_by_name, drop_rows_with_OWID
+from filters.base_filters import country_based_interpolation, keep_columns_by_name, drop_rows_with_OWID, drop_rows_with_occurrence_number
 
 db = DBConnection()
 
 raw_data = get_our_world_in_data()
 filtered_data = drop_rows_with_OWID(raw_data)
+filtered_data = drop_rows_with_occurrence_number(filtered_data, 1)
 interpolated_data = country_based_interpolation(filtered_data)
 remaining_data = keep_columns_by_name(interpolated_data, get_our_world_in_data_attributes.keys())
 # skipping processing

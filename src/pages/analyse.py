@@ -114,7 +114,6 @@ layout = three_splitter_v2(
                         dbc.Select(
                             options=[
                                 {"value": "mean", "label": "Mean"},
-                                {"value": "individual", "label": "Individual"},
                                 {"value": "none", "label": "None"}
                             ],
                             value="none",
@@ -148,7 +147,6 @@ layout = three_splitter_v2(
                         dbc.Select(
                         options=[
                             {"value": "mean", "label": "Mean"},
-                            {"value": "individual", "label": "Individual"},
                             {"value": "none", "label": "None"}
                         ],
                         value="none",
@@ -326,26 +324,28 @@ def update_all_graphs(iso_code, attribute_1, attribute_2, aggregation_type, rela
         # country filter only checked if ISO Code is All
         filter_data = json.loads(filter_data)
         iso_code = filter_data.get("countries", None)
-        attribute_date_1 = get_attribute(
-            attribute_1, start_date, end_date, iso_code, aggregation_type)
-        attribute_date_2 = get_attribute(
-            attribute_2, start_date, end_date, iso_code, aggregation_type)
+        
 
         if aggregation_type == "mean":
+            attribute_date_1 = get_attribute(
+                attribute_1, start_date, end_date, iso_code, aggregation_type)
+            attribute_date_2 = get_attribute(
+                attribute_2, start_date, end_date, iso_code, aggregation_type)
             fig2 = render_bar_compare(attribute_date_1, attribute_1,
                                       "location", attribute_date_2, attribute_2)
             fig1 = go.Figure()
 
         else:
-            attribute_date_1[attribute_2] = attribute_date_2[attribute_2]
-            correlation = compute_corr_two_attributes(
-                attribute_date_1, attribute_1, attribute_2)
+            df ,correlation = compute_corr_two_attributes(
+                attribute_1, attribute_2, start_date, end_date, iso_code)
+            
+            
 
             data = correlation.to_dict('records')
             columns = [{"name": i, "id": i} for i in correlation.columns]
             style = data_bars('Correlation')
             fig2 = render_country_lines(
-                attribute_date_1, attribute_1, attribute_2, "date", "location")
+                df, attribute_1, attribute_2, "date", "location")
             fig1 = go.Figure()
     else:
         fig1 = None
@@ -445,7 +445,7 @@ def data_bars(column):
                 )
             )
         elif max_bound <= strong_point1 and max_bound <= weak_point1:
-            print(max_bound)
+            # print(max_bound)
             background = (
                 """
                     linear-gradient(90deg,    

@@ -10,7 +10,11 @@ def drop_rows_with_OWID(data):
     del data['is_continent']
     return data
         
-        
+def drop_rows_with_occurrence_number(data, number):
+    is_multi = data['location'].value_counts() > 1
+    filtered = data[data['location'].isin(is_multi[is_multi].index)]
+    print(filtered)
+    return filtered
     
 
 def remove_columns_or_rows_with_nan(data, axis, how):
