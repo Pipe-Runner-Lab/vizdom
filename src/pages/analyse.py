@@ -6,6 +6,7 @@ from components.bar.bar import render_bar_compare
 from components.layouts.page_layouts import three_splitter_v2
 from crawlers.url_crawlers import get_our_world_in_data_attributes
 from data_layer.basic_data_layer import compute_corr_two_attributes, get_list_of_countries, get_total_number_of_cases_by_date, get_attribute, get_filtered_countries
+from utils.util import data_bars
 import dash_bootstrap_components as dbc
 import plotly.graph_objects as go
 import pandas as pd
@@ -114,7 +115,6 @@ layout = three_splitter_v2(
                         dbc.Select(
                             options=[
                                 {"value": "mean", "label": "Mean"},
-                                {"value": "individual", "label": "Individual"},
                                 {"value": "none", "label": "None"}
                             ],
                             value="none",
@@ -148,7 +148,6 @@ layout = three_splitter_v2(
                         dbc.Select(
                         options=[
                             {"value": "mean", "label": "Mean"},
-                            {"value": "individual", "label": "Individual"},
                             {"value": "none", "label": "None"}
                         ],
                         value="none",
@@ -326,26 +325,25 @@ def update_all_graphs(iso_code, attribute_1, attribute_2, aggregation_type, rela
         # country filter only checked if ISO Code is All
         filter_data = json.loads(filter_data)
         iso_code = filter_data.get("countries", None)
-        attribute_date_1 = get_attribute(
-            attribute_1, start_date, end_date, iso_code, aggregation_type)
-        attribute_date_2 = get_attribute(
-            attribute_2, start_date, end_date, iso_code, aggregation_type)
+        
 
         if aggregation_type == "mean":
+            attribute_date_1 = get_attribute(
+                attribute_1, start_date, end_date, iso_code, aggregation_type)
+            attribute_date_2 = get_attribute(
+                attribute_2, start_date, end_date, iso_code, aggregation_type)
             fig2 = render_bar_compare(attribute_date_1, attribute_1,
                                       "location", attribute_date_2, attribute_2)
             fig1 = go.Figure()
 
         else:
-            attribute_date_1[attribute_2] = attribute_date_2[attribute_2]
-            correlation = compute_corr_two_attributes(
-                attribute_date_1, attribute_1, attribute_2)
-
+            df ,correlation = compute_corr_two_attributes(
+                attribute_1, attribute_2, start_date, end_date, iso_code)
             data = correlation.to_dict('records')
             columns = [{"name": i, "id": i} for i in correlation.columns]
-            style = data_bars('Correlation')
+            style = data_bars(correlation, 'Correlation')
             fig2 = render_country_lines(
-                attribute_date_1, attribute_1, attribute_2, "date", "location")
+                df, attribute_1, attribute_2, "date", "location")
             fig1 = go.Figure()
     else:
         fig1 = None
@@ -371,93 +369,3 @@ def update_all_graphs(iso_code, attribute_1, attribute_2, aggregation_type, rela
         'textAlign': 'left'
     }]
 
-
-def data_bars(column):
-    n_bins = 100
-    bounds = np.arange(-1.0, 1.01, 0.01)
-    bounds = bounds.round(2)
-    # bounds = [i * (1.0 / n_bins) for i in range(n_bins + 1)]
-    ranges = [i for i in bounds]
-    color_above = 'green'
-    color_middle = 'yellow'
-    color_below = 'red'
-    styles = []
-    weak_point1 = 1/3
-    strong_point1 = 2/3
-    weak_point2 = -1/3
-    strong_point2 = -2/3
-    for i in range(1, len(bounds)):
-        background = None
-        min_bound = ranges[i - 1]
-        max_bound = ranges[i]
-        min_bound_percentage = bounds[i - 1] * 100
-        max_bound_percentage = bounds[i] * 100
-        style = {
-            'if': {
-                'filter_query': (
-                    '{{{column}}} >= {min_bound}' +
-                    (' && {{{column}}} < {max_bound}' if (
-                        i < len(bounds) - 1) else '')
-                ).format(column=column, min_bound=min_bound, max_bound=max_bound),
-                'column_id': column
-            },
-            'paddingBottom': 2,
-            'paddingTop': 2
-        }
-        if max_bound <= weak_point1 and max_bound >= 0.0:
-            # print(max_bound)
-            background = (
-                """
-                    linear-gradient(90deg,
-                    {color_below} 0%,
-                    {color_below} {min_bound_percentage}%,
-                    white {min_bound_percentage}%,
-                    white 100%)
-                """.format(
-                    min_bound_percentage=min_bound_percentage,
-                    color_below=color_below
-                )
-            )
-        if max_bound >= weak_point2 and max_bound <= 0:
-            background = (
-                """
-                    linear-gradient(-90deg,
-                    {color_below} 0%,
-                    {color_below} {min_bound_percentage}%,
-                    white {min_bound_percentage}%,
-                    white 100%)
-                """.format(
-                    min_bound_percentage=min_bound_percentage,
-                    color_below=color_below
-                )
-            )
-        elif max_bound > strong_point1:
-            background = (
-                """
-                    linear-gradient(90deg,    
-                    {color_above} 0%,
-                    {color_above} {max_bound_percentage}%,
-                    white {max_bound_percentage}%,
-                    white 100%)
-                """.format(
-                    max_bound_percentage=max_bound_percentage,
-                    color_above=color_above
-                )
-            )
-        elif max_bound <= strong_point1 and max_bound <= weak_point1:
-            background = (
-                """
-                    linear-gradient(90deg,    
-                    {color_middle} 0%,
-                    {color_middle} {max_bound_percentage}%,
-                    white {max_bound_percentage}%,
-                    white 66%)
-                """.format(
-                    max_bound_percentage=max_bound_percentage,
-                    color_middle=color_middle
-                )
-            )
-        style['background'] = background
-        styles.append(style)
-
-    return styles

@@ -7,7 +7,7 @@ from crawlers.url_crawlers import get_our_world_in_data_attributes
 def render_bar(df1, x_column, y_column, color_column=None):
 
   
-      return px.bar(df1, y=y_column, x=y_column, color=color_column, labels={
+      return px.bar(df1, y=y_column, x=x_column, color=color_column, labels={
                     x_column: get_our_world_in_data_attributes[x_column]["label"], 
                     y_column: get_our_world_in_data_attributes[y_column]["label"]})
       

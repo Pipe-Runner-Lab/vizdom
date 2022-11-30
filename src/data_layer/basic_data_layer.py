@@ -38,7 +38,7 @@ def get_aggregated_total_cases_by_country(start_date=None, end_date=None, iso_co
     return df
 
 
-def get_attribute(attribute, start_date=None, end_date=None, iso_code=None, aggregation_type=None):
+def get_attribute(attribute, start_date=None, end_date=None, iso_code=None, aggregation_type=None, resample=True):
     query = query_creator(iso_code=iso_code, start_date=start_date, end_date=end_date)
     df = DBConnection().get_df(f'date, location, {attribute}', 'covid', query)
     
@@ -46,7 +46,9 @@ def get_attribute(attribute, start_date=None, end_date=None, iso_code=None, aggr
     if aggregation_type == "mean":
         df = df.groupby(['location']).mean().reset_index()
         return df
-    return resample_by_date_range(df, start_date, end_date)
+    if resample:
+        return resample_by_date_range(df, start_date, end_date)
+    return df
 
 def get_total_number_of_cases_by_date(iso_code=None, start_date=None, end_date=None):
     query = query_creator(iso_code=iso_code, start_date=start_date, end_date=end_date)
@@ -62,13 +64,16 @@ def get_list_of_countries():
         dict[iso_code] = {"label": location}
     return dict
 
-def compute_corr_two_attributes(df, attribute_1, attribute_2):
-    unique_countries = df.location.unique()
+def compute_corr_two_attributes(attribute_1, attribute_2, start_date=None, end_date=None, iso_code=None):
+    df1 = get_attribute(attribute_1, start_date, end_date, iso_code, iso_code, False)
+    df2 = get_attribute(attribute_2, start_date, end_date, iso_code, iso_code, False)
+    df1[attribute_2] = df2[attribute_2]
+    unique_countries = df1.location.unique()
     corr_matrix = []
     for country in unique_countries:
-        data = df[df.location == country]
+        data = df1[df1.location == country]
         corr = pearsonr(data[attribute_1], data[attribute_2])
-        corr_matrix.append([country, attribute_1, attribute_2, round(corr[0], 3)])
-    df = pd.DataFrame(corr_matrix, columns=[
-                              'Country', 'Attribute 1', 'Attribute 2', 'Correlation'])
-    return df   
+        corr_matrix.append([country, round(corr[0], 3)])
+    data_corr = pd.DataFrame(corr_matrix, columns=[
+                              'Country', 'Correlation'])
+    return df1, data_corr   

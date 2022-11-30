@@ -62,5 +62,20 @@
 }
 
 .table-container {
-  padding: 8px;
+  padding: 2px 8px;
+}
+
+td, th {
+  border: 0px !important;
+  border-bottom: 1px solid #6B728E !important;
+}
+
+.table-container th:first-child {
+  border-radius: 8px 0px 0px 0px;
+  background: #F3EFE0 !important;
+}
+
+.table-container th:last-child {
+  border-radius: 0px 8px 0px 0px;
+  background: #D6E4E5 !important;
 }
