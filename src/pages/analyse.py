@@ -5,8 +5,8 @@ from components.line.line import render_line, render_two_lines, render_country_l
 from components.bar.bar import render_bar_compare
 from components.layouts.page_layouts import three_splitter_v2
 from crawlers.url_crawlers import get_our_world_in_data_attributes
-from data_layer.basic_data_layer import compute_corr_two_attributes, get_list_of_countries, get_total_number_of_cases_by_date, get_attribute, get_filtered_countries
-from utils.util import data_bars
+from data_layer.basic_data_layer import get_list_of_countries, get_total_number_of_cases_by_date, get_attribute, get_filtered_countries
+from utils.util import data_bars_diverging, create_table_bar_styles
 import dash_bootstrap_components as dbc
 import plotly.graph_objects as go
 import pandas as pd
@@ -317,7 +317,7 @@ def up_date_bottom_graph(iso_code, relayoutData, filter_data):
 def update_all_graphs(iso_code, attribute_1, attribute_2, aggregation_type, relayoutData, filter_data):
     start_date, end_date = get_date_range(relayoutData)
     
-    data = None
+    column_data = None
     columns = None
     style = [{}]
     
@@ -325,7 +325,6 @@ def update_all_graphs(iso_code, attribute_1, attribute_2, aggregation_type, rela
         # country filter only checked if ISO Code is All
         filter_data = json.loads(filter_data)
         iso_code = filter_data.get("countries", None)
-        
 
         if aggregation_type == "mean":
             attribute_date_1 = get_attribute(
@@ -337,11 +336,8 @@ def update_all_graphs(iso_code, attribute_1, attribute_2, aggregation_type, rela
             fig1 = go.Figure()
 
         else:
-            df ,correlation = compute_corr_two_attributes(
+            df, column_data, columns, style = create_table_bar_styles(
                 attribute_1, attribute_2, start_date, end_date, iso_code)
-            data = correlation.to_dict('records')
-            columns = [{"name": i, "id": i} for i in correlation.columns]
-            style = data_bars(correlation, 'Correlation')
             fig2 = render_country_lines(
                 df, attribute_1, attribute_2, "date", "location")
             fig1 = go.Figure()
@@ -364,7 +360,7 @@ def update_all_graphs(iso_code, attribute_1, attribute_2, aggregation_type, rela
                 attribute_2, start_date, end_date, iso_code, aggregation_type)
             fig2 = render_bar_compare(attribute_data_1, attribute_1,
                                       "location", attribute_data_2, attribute_2)
-    return fig1, fig2, {"opacity": "1"}, {"opacity": "1"}, data, columns, style + [{
+    return fig1, fig2, {"opacity": "1"}, {"opacity": "1"}, column_data, columns, style + [{
         'if': {'column_id': 'Country'},
         'textAlign': 'left'
     }]

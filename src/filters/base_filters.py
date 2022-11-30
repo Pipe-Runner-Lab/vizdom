@@ -13,7 +13,6 @@ def drop_rows_with_OWID(data):
 def drop_rows_with_occurrence_number(data, number):
     is_multi = data['location'].value_counts() > 1
     filtered = data[data['location'].isin(is_multi[is_multi].index)]
-    print(filtered)
     return filtered
     
 

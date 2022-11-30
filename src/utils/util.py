@@ -1,41 +1,49 @@
-def data_bars(df, column):
+from data_layer.basic_data_layer import compute_corr_two_attributes
+
+def create_table_bar_styles(attribute_1, attribute_2, start_date, end_date, iso_code):
+    df ,correlation = compute_corr_two_attributes(
+        attribute_1, attribute_2, start_date, end_date, iso_code)
+    data = correlation.to_dict('records')
+    columns = [{"name": i, "id": i} for i in correlation.columns]
+    style = data_bars_diverging('Correlation')
+    return df, data, columns, style
+
+def data_bars_diverging(column, color_above='#3D9970', color_below='#FF4136'):
     n_bins = 100
-    # bounds = np.arange(-1.0, 1.01, 0.01)
-    # bounds = bounds.round(5)
     bounds = [i * (1.0 / n_bins) for i in range(n_bins + 1)]
-    ranges = [i for i in bounds]
-    color_above = 'green'
-    color_below = 'red'
+    col_max = 1
+    col_min = -1
+    ranges = [
+        ((col_max - col_min) * i) + col_min
+        for i in bounds
+    ]
+    midpoint = (col_max + col_min) / 2.
+
     styles = []
-    midpoint_pos = 1 / 2
-    midpoint_neg = -1 / 2
     for i in range(1, len(bounds)):
-        background = None
         min_bound = ranges[i - 1]
         max_bound = ranges[i]
         min_bound_percentage = bounds[i - 1] * 100
         max_bound_percentage = bounds[i] * 100
+
         style = {
-                'if': {
-                    'filter_query': (
-                        '{{{column}}} >= {min_bound}' +
-                        (' && {{{column}}} < {max_bound}' if (
-                            i < len(bounds) - 1) else '')
-                    ).format(column=column, min_bound=min_bound, max_bound=max_bound),
-                    'column_id': column
-                },
-                'paddingBottom': 2,
-                'paddingTop': 2
-            }
-        for corr in df['Correlation']:
-            absCorr = abs(corr)
-            print(absCorr)
-            
-            if max_bound > midpoint_pos:
-                background = (
+            'if': {
+                'filter_query': (
+                    '{{{column}}} >= {min_bound}' +
+                    (' && {{{column}}} < {max_bound}' if (i < len(bounds) - 1) else '')
+                ).format(column=column, min_bound=min_bound, max_bound=max_bound),
+                'column_id': column
+            },
+            'paddingBottom': 2,
+            'paddingTop': 2
+        }
+        if max_bound > midpoint:
+            background = (
                 """
-                    linear-gradient(to right,
-                    {color_above} 0%,
+                    linear-gradient(90deg,
+                    white 0%,
+                    white 50%,
+                    {color_above} 50%,
                     {color_above} {max_bound_percentage}%,
                     white {max_bound_percentage}%,
                     white 100%)
@@ -44,21 +52,22 @@ def data_bars(df, column):
                     color_above=color_above
                 )
             )
-            elif max_bound <= midpoint_pos:
-                background = (
+        else:
+            background = (
                 """
-                    linear-gradient(to right,
-                    {color_below} 0%,
-                    {color_below} {min_bound_percentage}%,
+                    linear-gradient(90deg,
+                    white 0%,
                     white {min_bound_percentage}%,
+                    {color_below} {min_bound_percentage}%,
+                    {color_below} 50%,
+                    white 50%,
                     white 100%)
                 """.format(
                     min_bound_percentage=min_bound_percentage,
                     color_below=color_below
                 )
             )
-            
-            style['background'] = background
-            styles.append(style)
-    
+        style['background'] = background
+        styles.append(style)
+
     return styles
