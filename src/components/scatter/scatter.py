@@ -17,7 +17,9 @@ def render_scatter(df1, df2, x_column, y_column):
                       xanchor="right",
                       x=1
                       ))
-    fig.update_layout(margin=dict(l=20, r=20, t=20, b=20))
+    fig.update_layout(
+        margin=dict(r=12, t=24, b=16),
+    )
     fig.update_xaxes(title_text=attr1_label)
     fig.update_yaxes(title_text=attr2_label)
     return fig

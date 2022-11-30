@@ -1,15 +1,18 @@
 import json
-from dash import html, dcc, register_page, Input, Output, callback, State, dash_table
+from dash import html, dcc, register_page, Input, Output, callback, State, dash_table, ALL
 from components.scatter.scatter import render_scatter
 from components.line.line import render_line, render_two_lines, render_country_lines
 from components.bar.bar import render_bar_compare
 from components.layouts.page_layouts import three_splitter_v2
 from crawlers.url_crawlers import get_our_world_in_data_attributes
-from data_layer.basic_data_layer import compute_corr_two_attributes, get_list_of_countries, get_total_number_of_cases_by_date, get_attribute
+from data_layer.basic_data_layer import compute_corr_two_attributes, get_list_of_countries, get_total_number_of_cases_by_date, get_attribute, get_filtered_countries
 import dash_bootstrap_components as dbc
 import plotly.graph_objects as go
 import pandas as pd
 import numpy as np
+from utils.date_range import get_date_range
+from utils.expression_parser import parse
+from components.filter_input.filter_input import render_filter_input
 
 # * static data
 
@@ -21,22 +24,50 @@ register_page(__name__, path="/analyse")
 
 layout = three_splitter_v2(
     main_1=[
-        dcc.Graph(
-            figure={},
-            id="analyse-main-graph-1",
-            className="main-graph"
+        html.Div(
+            dcc.Loading(
+                dcc.Graph(
+                    figure={},
+                    id="analyse-main-graph-1",
+                    className="main-graph",
+                    style={"opacity": "0"}
+                )
+            ),
+            className="card"
         ),
         html.Div(
-            dash_table.DataTable(
-                id="correlation-table"   
+            dcc.Loading(
+                dash_table.DataTable(
+                    id="correlation-table"
+                )
             ),
-            className="table-container"
+            className="table-container card",
         )
     ],
-    main_2=dcc.Graph(
-        figure={},
-        id="analyse-main-graph-2",
-        className="main-graph"
+    main_2=html.Div(
+        dcc.Loading(
+            dcc.Graph(
+                figure={},
+                id="analyse-main-graph-2",
+                className="main-graph",
+                style={"opacity": "0"}
+            )
+        ),
+        className="card"
+    ),
+    bottom=html.Div(
+        dcc.Loading(
+            dcc.Graph(
+                figure={},
+                id="analyse-bottom-graph",
+                className="bottom-graph",
+                style={"opacity": "0"}
+            ),
+            id="analyse-bottom-graph-loading",
+            className="loading"
+        ),
+        className="card",
+        style={"height": "100%"}
     ),
     right=[
         html.Div(
@@ -151,6 +182,21 @@ layout = three_splitter_v2(
                     id="analyse-attribute-filter",
                     value=None
                 ),
+                html.Div(
+                    [],
+                    className="filter-advanced-container",
+                    id="analyse-filter-advanced-container"
+                ),
+                html.Div(
+                    [],
+                    className="filter-advanced-error-container",
+                    id="analyse-filter-advanced-error-container"
+                ),
+                html.Div(
+                    [],
+                    className="filter-advanced-success-container",
+                    id="analyse-filter-advanced-success-container"
+                ),
                 dbc.Button(
                     "Apply Filter",
                     color="success",
@@ -159,19 +205,17 @@ layout = three_splitter_v2(
 
                 dcc.Store(id='analyse-filter-data')
             ],
-            className="action-wrapper filter-panel",
-            id="analyse-filter-panel"
+            id="analyse-filter-panel",
+            className="action-wrapper filter-panel"
         )
     ],
-
-    bottom=dcc.Graph(
-        figure={},
-        id="analyse-bottom-graph",
-        className="bottom-graph"
-    ),
     id="analyse-page"
 )
 
+
+# ---------------------------------------------------------------------------- #
+#                               FILTER CALLBACKS                               #
+# ---------------------------------------------------------------------------- #
 
 @ callback(
     Output("analyse-filter-panel", "style"),
@@ -179,53 +223,90 @@ layout = three_splitter_v2(
 )
 def toggle_filter_panel(iso_code):
     if iso_code == "All":
-        return {"display": "block"}
+        return {"display": "flex"}
     else:
         return {"display": "none"}
 
 
 @ callback(
+    Output("analyse-filter-advanced-container", "children"),
+    Input("analyse-attribute-filter", "value"),
+    State("analyse-filter-advanced-container", "children"),
+)
+def update_advanced_filter(attributes, children):
+    if attributes is None:
+        return []
+    return [render_filter_input(attribute) for attribute in attributes]
+
+
+@ callback(
     Output("analyse-filter-data", "data"),
+    Output("analyse-filter-advanced-error-container", "children"),
+    Output("analyse-filter-advanced-success-container", "children"),
     Input("analyse-apply-filter", "n_clicks"),
     State("analyse-country-filter", "value"),
+    State("analyse-attribute-filter", "value"),
+    State({'type': 'filter-input', 'index': ALL}, 'value')
 )
-def up_date_filter(n_clicks, countries):
-    return json.dumps({
-        "countries": countries
-    })
+def update_filter(n_clicks, countries, attribute, filter_expressions):
+    error_in = []
+    filter_data = []
+    error_block = None
+
+    if attribute is not None:
+        for attribute_command in zip(attribute, filter_expressions):
+            try:
+                filter_data.append(( attribute_command[0] ,parse(attribute_command[1])))
+            except Exception as e:
+                error_in.append(attribute_command[0])
+
+    if len(error_in) != 0:
+        error_block = dbc.Alert(f"Skipping invalid filter expression for {(', ').join(error_in)}", color="danger", class_name="alert")
+
+    if len(filter_data) > 0:
+        countries = get_filtered_countries(countries, filter_data)
+    
+    success_message = "Found " + str(len(countries)) + " countries" if len(countries) > 0 else "No countries found, showing all countries"
+    success_block = dbc.Alert(success_message, color="success", class_name="alert")
+
+    return json.dumps({"countries": countries}), error_block, success_block
+
+# ---------------------------------------------------------------------------- #
+#                            BOTTOM GRAPH CALLBACKS                            #
+# ---------------------------------------------------------------------------- #
 
 
-@callback(
+@ callback(
     Output("analyse-bottom-graph", "figure"),
+    Output("analyse-bottom-graph", "style"),
     Input("analyse-country-dropdown", "value"),
     Input("analyse-bottom-graph", "relayoutData"),
     Input("analyse-filter-data", "data")
 )
 def up_date_bottom_graph(iso_code, relayoutData, filter_data):
-    relayoutData = {} if relayoutData is None else relayoutData
-    start_date = relayoutData.get("xaxis.range[0]", None)
-    end_date = relayoutData.get("xaxis.range[1]", None)
+    start_date, end_date = get_date_range(relayoutData)
 
     if iso_code == "All":
         filter_data = json.loads(filter_data)
         iso_code = filter_data.get("countries", None)
         total_num_cases = get_total_number_of_cases_by_date(
             iso_code=iso_code, start_date=start_date, end_date=end_date)
-        return render_line(total_num_cases, "date", "total_cases", "location")
+        return render_line(total_num_cases, "date", "total_cases", "location"), {"opacity": "1"}
     else:
         total_num_cases = get_total_number_of_cases_by_date(
             iso_code=iso_code, start_date=start_date, end_date=end_date)
         total_num_cases = total_num_cases
-        return render_line(total_num_cases, "date", "total_cases")
-
+        return render_line(total_num_cases, "date", "total_cases"),  {"opacity": "1"}
 
 @callback(
     Output("analyse-main-graph-1", "figure"),
     Output("analyse-main-graph-2", "figure"),
+    Output("analyse-main-graph-1", "style"),
+    Output("analyse-main-graph-2", "style"),
     [
-    Output("correlation-table", 'data'),
-    Output("correlation-table", 'columns'),
-    Output("correlation-table", 'style_data_conditional')
+        Output("correlation-table", 'data'),
+        Output("correlation-table", 'columns'),
+        Output("correlation-table", 'style_data_conditional')
     ],
     Input("analyse-country-dropdown", "value"),
     Input("analyse-attribute1-dropdown", "value"),
@@ -235,12 +316,12 @@ def up_date_bottom_graph(iso_code, relayoutData, filter_data):
     Input("analyse-filter-data", "data"),
 )
 def update_all_graphs(iso_code, attribute_1, attribute_2, aggregation_type, relayoutData, filter_data):
-    relayoutData = {} if relayoutData is None else relayoutData
-    start_date = relayoutData.get("xaxis.range[0]", None)
-    end_date = relayoutData.get("xaxis.range[1]", None)
+    start_date, end_date = get_date_range(relayoutData)
+    
     data = None
     columns = None
     style = [{}]
+    
     if iso_code == "All":
         # country filter only checked if ISO Code is All
         filter_data = json.loads(filter_data)
@@ -252,14 +333,14 @@ def update_all_graphs(iso_code, attribute_1, attribute_2, aggregation_type, rela
 
         if aggregation_type == "mean":
             fig2 = render_bar_compare(attribute_date_1, attribute_1,
-                              "location", attribute_date_2, attribute_2)
+                                      "location", attribute_date_2, attribute_2)
             fig1 = go.Figure()
 
         else:
             attribute_date_1[attribute_2] = attribute_date_2[attribute_2]
             correlation = compute_corr_two_attributes(
                 attribute_date_1, attribute_1, attribute_2)
-            
+
             data = correlation.to_dict('records')
             columns = [{"name": i, "id": i} for i in correlation.columns]
             style = data_bars('Correlation')
@@ -284,11 +365,11 @@ def update_all_graphs(iso_code, attribute_1, attribute_2, aggregation_type, rela
             attribute_data_2 = get_attribute(
                 attribute_2, start_date, end_date, iso_code, aggregation_type)
             fig2 = render_bar_compare(attribute_data_1, attribute_1,
-                              "location", attribute_data_2, attribute_2)
-    return fig1, fig2, data, columns, style + [{
-            'if': {'column_id': 'Country'},
-            'textAlign': 'left'
-        }]
+                                      "location", attribute_data_2, attribute_2)
+    return fig1, fig2, {"opacity": "1"}, {"opacity": "1"}, data, columns, style + [{
+        'if': {'column_id': 'Country'},
+        'textAlign': 'left'
+    }]
 
 
 def data_bars(column):
@@ -315,7 +396,8 @@ def data_bars(column):
             'if': {
                 'filter_query': (
                     '{{{column}}} >= {min_bound}' +
-                    (' && {{{column}}} < {max_bound}' if (i < len(bounds) - 1) else '')
+                    (' && {{{column}}} < {max_bound}' if (
+                        i < len(bounds) - 1) else '')
                 ).format(column=column, min_bound=min_bound, max_bound=max_bound),
                 'column_id': column
             },
@@ -336,7 +418,7 @@ def data_bars(column):
                     color_below=color_below
                 )
             )
-        if  max_bound >= weak_point2 and max_bound <= 0:
+        if max_bound >= weak_point2 and max_bound <= 0:
             background = (
                 """
                     linear-gradient(-90deg,
@@ -377,6 +459,6 @@ def data_bars(column):
                 )
             )
         style['background'] = background
-        styles.append(style) 
+        styles.append(style)
 
     return styles

@@ -11,8 +11,6 @@ def parse(expression):
       value = split_by_symbol[1]
       symbol = split_by_symbol[0]
 
-      print(symbol, value)
-
       type = None
       if symbol == "<":
         type = "lt"

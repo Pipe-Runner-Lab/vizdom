@@ -7,8 +7,8 @@ from components.layouts.page_layouts import three_splitter_v1
 from data_layer.basic_data_layer import get_aggregated_total_cases_by_country, get_list_of_countries, get_total_number_of_cases_by_date, get_attribute, get_filtered_countries
 import dash_bootstrap_components as dbc
 from crawlers.url_crawlers import get_our_world_in_data_attributes
-from utils.date_range import get_date_range
 from components.filter_input.filter_input import render_filter_input
+from utils.date_range import get_date_range
 from utils.expression_parser import parse
 
 # * static data
@@ -163,7 +163,7 @@ layout = three_splitter_v1(
             className="action-wrapper filter-panel"
         )
     ],
-    id="explore-explore-page"
+    id="explore-page"
 )
 
 
@@ -284,8 +284,7 @@ def update_all_graphs(iso_code, attribute, aggregation_type, relayoutData, filte
             attribute, start_date, end_date, iso_code, aggregation_type)
 
         if aggregation_type == "mean":
-            fig2 = render_bar(attribute_date, "location",
-                              attribute, None, None)
+            fig2 = render_bar(attribute_date, "location", attribute)
         else:
             fig2 = render_line(attribute_date, "date", attribute, "location")
 

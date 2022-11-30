@@ -48,7 +48,9 @@ def render_country_lines(data, y_column_1, y_column_2, x_column, country, color_
                   line={'dash': 'solid', 'color': color},
                   name = f"{country}, <br>{attr2_label}"),
                   secondary_y=True)
-    fig.update_layout(margin=dict(l=20, r=20, t=20, b=20))
+    fig.update_layout(
+        margin=dict(r=12, t=24, b=16),
+    )
     fig.update_xaxes(title_text=f"{date_label}")
     fig.update_yaxes(title_text=f"{attr1_label}", secondary_y=False)
     fig.update_yaxes(title_text=f"{attr2_label}", secondary_y=True)
@@ -71,7 +73,9 @@ def render_two_lines(df1, df2, x_column, y_column_1, y_column_2, color_column=No
                   mode = 'lines',
                   name = attr2_label),
                   secondary_y=True)
-    fig.update_layout(margin=dict(l=20, r=20, t=20, b=20))
+    fig.update_layout(
+        margin=dict(r=12, t=24, b=16),
+    )
     fig.update_traces(showlegend=True)
     fig.update_xaxes(title_text=f"{date_label}")
     fig.update_yaxes(title_text=f"{attr1_label}", secondary_y=False)
