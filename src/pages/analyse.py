@@ -36,10 +36,13 @@ layout = three_splitter_v2(
             className="card"
         ),
         html.Div(
-            dcc.Loading(
-                dash_table.DataTable(
-                    id="correlation-table"
-                )
+            html.Div(
+                dcc.Loading(
+                    dash_table.DataTable(
+                        id="correlation-table"
+                    )
+                ),
+                className="table-wrapper"
             ),
             className="table-container card",
         )
@@ -254,18 +257,22 @@ def update_filter(n_clicks, countries, attribute, filter_expressions):
     if attribute is not None:
         for attribute_command in zip(attribute, filter_expressions):
             try:
-                filter_data.append(( attribute_command[0] ,parse(attribute_command[1])))
+                filter_data.append(
+                    (attribute_command[0], parse(attribute_command[1])))
             except Exception as e:
                 error_in.append(attribute_command[0])
 
     if len(error_in) != 0:
-        error_block = dbc.Alert(f"Skipping invalid filter expression for {(', ').join(error_in)}", color="danger", class_name="alert")
+        error_block = dbc.Alert(
+            f"Skipping invalid filter expression for {(', ').join(error_in)}", color="danger", class_name="alert")
 
     if len(filter_data) > 0:
         countries = get_filtered_countries(countries, filter_data)
-    
-    success_message = "Found " + str(len(countries)) + " countries" if len(countries) > 0 else "No countries found, showing all countries"
-    success_block = dbc.Alert(success_message, color="success", class_name="alert")
+
+    success_message = "Found " + str(len(countries)) + " countries" if len(
+        countries) > 0 else "No countries found, showing all countries"
+    success_block = dbc.Alert(
+        success_message, color="success", class_name="alert")
 
     return json.dumps({"countries": countries}), error_block, success_block
 
@@ -296,6 +303,7 @@ def up_date_bottom_graph(iso_code, relayoutData, filter_data):
         total_num_cases = total_num_cases
         return render_line(total_num_cases, "date", "total_cases"),  {"opacity": "1"}
 
+
 @callback(
     Output("analyse-main-graph-1", "figure"),
     Output("analyse-main-graph-2", "figure"),
@@ -315,32 +323,28 @@ def up_date_bottom_graph(iso_code, relayoutData, filter_data):
 )
 def update_all_graphs(iso_code, attribute_1, attribute_2, aggregation_type, relayoutData, filter_data):
     start_date, end_date = get_date_range(relayoutData)
-    
+
     data = None
     columns = None
     style = [{}]
-    
+
     if iso_code == "All":
         # country filter only checked if ISO Code is All
         filter_data = json.loads(filter_data)
         iso_code = filter_data.get("countries", None)
-        
 
         if aggregation_type == "mean":
             attribute_date_1 = get_attribute(
                 attribute_1, start_date, end_date, iso_code, aggregation_type)
             attribute_date_2 = get_attribute(
                 attribute_2, start_date, end_date, iso_code, aggregation_type)
-            fig2 = render_bar_compare(attribute_date_1, attribute_1,
-                                      "location", attribute_date_2, attribute_2)
+            fig2 = render_bar_compare(
+                attribute_date_1, attribute_1, "location", attribute_date_2, attribute_2)
             fig1 = go.Figure()
 
         else:
-            df ,correlation = compute_corr_two_attributes(
+            df, correlation = compute_corr_two_attributes(
                 attribute_1, attribute_2, start_date, end_date, iso_code)
-            
-            
-
             data = correlation.to_dict('records')
             columns = [{"name": i, "id": i} for i in correlation.columns]
             style = data_bars('Correlation')

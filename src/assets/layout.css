@@ -59,6 +59,28 @@
   background: #fff;
 }
 
+.table-container {
+  max-height: 220px;
+  padding: 8px;
+}
+
+.table-wrapper {
+  flex: 1;
+  max-height: calc(100% - 16px);
+  height: calc(100% - 16px);
+  width: calc(100% - 16px);
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.table-wrapper > div {
+  height: 100%;
+  width: 100%;
+}
+
 .sub-main > * + * {
   margin-top: 8px;
 }
