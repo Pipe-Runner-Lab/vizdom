@@ -1,0 +1,74 @@
+:root {
+  /* Dark Theme */
+  --brand-base: 244, 63, 94;
+  --primary-base: 253, 180, 189;
+  --primary-v1-base: 244, 63, 94;
+  --primary-v2-base: 190, 18, 60;
+  --secondary-base: 193, 180, 253;
+  --secondary-v1-base: 139, 92, 246;
+  --secondary-v2-base: 109, 40, 217;
+  --error-base: 208, 102, 121;
+
+  --text-base: 255, 255, 255;
+
+  --0dp-base: 24, 21, 32;
+  --1dp-base: 35, 32, 43;
+  --2dp-base: 40, 37, 48;
+  --3dp-base: 42, 39, 50;
+  --4dp-base: 44, 41, 52;
+  --6dp-base: 48, 45, 56;
+  --8dp-base: 51, 48, 59;
+  --12dp-base: 55, 52, 63;
+  --16dp-base: 57, 54, 65;
+  --24dp-base: 60, 57, 68;
+
+  --brand: rgba(var(--brand-base), 1);
+  --primary: rgba(var(--primary-base), 1);
+  --primary-v1: rgba(var(--primary-v1-base), 1);
+  --primary-v2: rgba(var(--primary-v2-base), 1);
+  --secondary: rgba(var(--secondary-base), 1);
+  --secondary-v1: rgba(var(--secondary-v1-base), 1);
+  --secondary-v2: rgba(var(--secondary-v2-base), 1);
+  --accent: #a7f4d0;
+  --error: rgba(var(--error-base), 1);
+  --text-high: rgba(var(--text-base), 1);
+  --text-medium: rgba(var(--text-base), 0.87);
+  --text-low: rgba(var(--text-base), 0.6);
+  --text-disabled: rgba(var(--text-base), 0.38);
+  --border-color: rgba(var(--text-base), 0.12);
+  --0dp: rgba(var(--0dp-base), 1);
+  --1dp: rgba(var(--1dp-base), 1);
+  --2dp: rgba(var(--2dp-base), 1);
+  --3dp: rgba(var(--3dp-base), 1);
+  --4dp: rgba(var(--4dp-base), 1);
+  --6dp: rgba(var(--6dp-base), 1);
+  --8dp: rgba(var(--8dp-base), 1);
+  --12dp: rgba(var(--12dp-base), 1);
+  --16dp: rgba(var(--16dp-base), 1);
+  --24dp: rgba(var(--24dp-base), 1);
+  --scrollbar-track: var(--notion-blue_background_co);
+
+  --shadow-color: 349deg 21% 10%;
+}
+
+:root {
+  --shadow-color: 0deg 0% 0%;
+  --shadow-elevation-low:
+    0px 0.8px 0.8px hsl(var(--shadow-color) / 0.13),
+    0px 1.2px 1.2px -1.5px hsl(var(--shadow-color) / 0.11),
+    -0.1px 3.1px 3.2px -3.1px hsl(var(--shadow-color) / 0.1);
+  --shadow-elevation-medium:
+    0px 0.8px 0.8px hsl(var(--shadow-color) / 0.14),
+    -0.1px 2.2px 2.3px -1px hsl(var(--shadow-color) / 0.13),
+    -0.1px 6px 6.2px -2.1px hsl(var(--shadow-color) / 0.11),
+    -0.4px 15.3px 15.8px -3.1px hsl(var(--shadow-color) / 0.1);
+  --shadow-elevation-high:
+    0px 0.8px 0.8px hsl(var(--shadow-color) / 0.13),
+    -0.1px 3.7px 3.8px -0.4px hsl(var(--shadow-color) / 0.12),
+    -0.2px 7px 7.2px -0.9px hsl(var(--shadow-color) / 0.12),
+    -0.3px 12.2px 12.6px -1.3px hsl(var(--shadow-color) / 0.11),
+    -0.5px 20.5px 21.2px -1.8px hsl(var(--shadow-color) / 0.1),
+    -0.8px 33.3px 34.5px -2.2px hsl(var(--shadow-color) / 0.1),
+    -1.2px 52px 53.8px -2.7px hsl(var(--shadow-color) / 0.09),
+    -1.9px 77.8px 80.5px -3.1px hsl(var(--shadow-color) / 0.08);
+}

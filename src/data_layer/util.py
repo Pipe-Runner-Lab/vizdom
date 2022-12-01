@@ -58,5 +58,4 @@ def query_creator(iso_code=None, start_date=None, end_date=None):
         return " AND ".join(query)
     else:
         return None
-    
-    
+

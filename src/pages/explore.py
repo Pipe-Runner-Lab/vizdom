@@ -68,14 +68,16 @@ layout = three_splitter_v1(
                     "Country",
                     className="sub-title"
                 ),
-                dbc.Select(
+                dcc.Dropdown(
                     options=[
                         {"value": "All", "label": "All"},
                         *[{"value": country, "label": countries.get(country, {}).get('label')} for country in countries]
                     ],
                     value="All",
                     id="explore-country-dropdown",
-                    class_name="select"
+                    # class_name="select",
+                    clearable=False,
+                    multi=False
                 ),
                 html.Div(
                     [
@@ -92,21 +94,27 @@ layout = three_splitter_v1(
                 ),
                 html.Div(
                     [
-                        dbc.Select(
+                        dcc.Dropdown(
                             options=[{"value": attributes, "label": attributes_info['label']}
                                      for attributes, attributes_info in list_of_attributes],
-                            value="new_deaths",
+                            value="total_cases",
                             id="explore-attribute-dropdown",
-                            class_name="select"
+                            # class_name="select",
+                            clearable=False,
+                            multi=False
                         ),
-                        dbc.Select(
+                        dcc.Dropdown(
                             options=[
                                 {"value": "mean", "label": "Mean"},
+                                {"value": "sum", "label": "Sum"},
+                                {"value": "latest", "label": "Latest"},
                                 {"value": "none", "label": "None"}
                             ],
                             value="none",
                             id="explore-aggregation-dropdown",
-                            class_name="select"
+                            # class_name="select",
+                            multi=False,
+                            clearable=False,
                         ),
                     ],
                     className="attribute-selectors"
@@ -126,7 +134,7 @@ layout = three_splitter_v1(
                     multi=True,
                     placeholder="Filter by countries",
                     id="explore-country-filter",
-                    value=['NOR', 'IND']
+                    value=[]
                 ),
                 dcc.Dropdown(
                     options=[{"value": attributes, "label": attributes_info['label']}
@@ -134,7 +142,7 @@ layout = three_splitter_v1(
                     multi=True,
                     placeholder="Filter by attributes",
                     id="explore-attribute-filter",
-                    value=None
+                    value=[]
                 ),
                 html.Div(
                     [],
@@ -154,7 +162,8 @@ layout = three_splitter_v1(
                 dbc.Button(
                     "Apply Filter",
                     color="success",
-                    id="explore-apply-filter"
+                    id="explore-apply-filter",
+                    className='success-button'
                 ),
 
                 dcc.Store(id='explore-filter-data')
@@ -173,7 +182,8 @@ layout = three_splitter_v1(
 
 @ callback(
     Output("explore-filter-panel", "style"),
-    Input("explore-country-dropdown", "value")
+    Input("explore-country-dropdown", "value"),
+    prevent_initial_call=True
 )
 def toggle_filter_panel(iso_code):
     if iso_code == "All":
@@ -186,6 +196,7 @@ def toggle_filter_panel(iso_code):
     Output("explore-filter-advanced-container", "children"),
     Input("explore-attribute-filter", "value"),
     State("explore-filter-advanced-container", "children"),
+    prevent_initial_call=True
 )
 def update_advanced_filter(attributes, children):
     if attributes is None:
@@ -200,7 +211,8 @@ def update_advanced_filter(attributes, children):
     Input("explore-apply-filter", "n_clicks"),
     State("explore-country-filter", "value"),
     State("explore-attribute-filter", "value"),
-    State({'type': 'filter-input', 'index': ALL}, 'value')
+    State({'type': 'filter-input', 'index': ALL}, 'value'),
+    prevent_initial_call=True
 )
 def update_filter(n_clicks, countries, attribute, filter_expressions):
     error_in = []
@@ -210,18 +222,22 @@ def update_filter(n_clicks, countries, attribute, filter_expressions):
     if attribute is not None:
         for attribute_command in zip(attribute, filter_expressions):
             try:
-                filter_data.append(( attribute_command[0] ,parse(attribute_command[1])))
+                filter_data.append(
+                    (attribute_command[0], parse(attribute_command[1])))
             except Exception as e:
                 error_in.append(attribute_command[0])
 
     if len(error_in) != 0:
-        error_block = dbc.Alert(f"Skipping invalid filter expression for {(', ').join(error_in)}", color="danger", class_name="alert")
+        error_block = dbc.Alert(
+            f"Skipping invalid filter expression for {(', ').join(error_in)}", color="danger", class_name="alert")
 
     if len(filter_data) > 0:
         countries = get_filtered_countries(countries, filter_data)
-    
-    success_message = "Found " + str(len(countries)) + " countries" if len(countries) > 0 else "No countries found, showing all countries"
-    success_block = dbc.Alert(success_message, color="success", class_name="alert")
+
+    success_message = "Found " + str(len(countries)) + " countries" if len(
+        countries) > 0 else "No countries found, showing all countries"
+    success_block = dbc.Alert(
+        success_message, color="success", class_name="alert")
 
     return json.dumps({"countries": countries}), error_block, success_block
 
@@ -241,16 +257,12 @@ def up_date_bottom_graph(iso_code, relayoutData, filter_data):
     start_date, end_date = get_date_range(relayoutData)
 
     if iso_code == "All":
-        filter_data = json.loads(filter_data)
+        filter_data = json.loads(filter_data) if filter_data is not None else {}
         iso_code = filter_data.get("countries", None)
-        total_num_cases = get_total_number_of_cases_by_date(
+        
+    total_num_cases = get_total_number_of_cases_by_date(
             iso_code=iso_code, start_date=start_date, end_date=end_date)
-        return render_line(total_num_cases, "date", "total_cases", "location"), {"opacity": "1"}
-    else:
-        total_num_cases = get_total_number_of_cases_by_date(
-            iso_code=iso_code, start_date=start_date, end_date=end_date)
-        total_num_cases = total_num_cases
-        return render_line(total_num_cases, "date", "total_cases"),  {"opacity": "1"}
+    return render_line(total_num_cases, "date", "total_cases", "location"), {"opacity": "1"}
 
 # ---------------------------------------------------------------------------- #
 #                                DATA CALLBACKS                                #
@@ -272,29 +284,24 @@ def up_date_bottom_graph(iso_code, relayoutData, filter_data):
 def update_all_graphs(iso_code, attribute, aggregation_type, relayoutData, filter_data):
     start_date, end_date = get_date_range(relayoutData)
 
-    # aggregate type plays a role in deciding how data should be shown when multiple countries are selected
-
     if iso_code == "All":
         # country filter only checked if ISO Code is All
-        filter_data = json.loads(filter_data)
+        filter_data = json.loads(filter_data) if filter_data is not None else {}
         iso_code = filter_data.get("countries", None)
-        country_agg_data = get_aggregated_total_cases_by_country(
-            start_date, end_date, iso_code)
         attribute_date = get_attribute(
-            attribute, start_date, end_date, iso_code, aggregation_type, True)
-
-        if aggregation_type == "mean":
-            fig2 = render_bar(attribute_date, "location", attribute)
-        else:
-            fig2 = render_line(attribute_date, "date", attribute, "location")
-
-        fig1 = render_map(country_agg_data, "total_cases")
+            attribute, start_date, end_date, iso_code, aggregation_type)
     else:
-        country_agg_data = get_aggregated_total_cases_by_country(
-            start_date, end_date, iso_code)
         attribute_date = get_attribute(
-            attribute, start_date, end_date, iso_code, True)
-        fig1, fig2 = render_map(country_agg_data, "total_cases"), render_line(
-            attribute_date, "date", attribute)
+            attribute, start_date, end_date, iso_code, aggregation_type)
+
+    country_agg_data = get_aggregated_total_cases_by_country(
+            start_date, end_date, iso_code)
+    
+    if aggregation_type != "none":
+        fig2 = render_bar(attribute_date, "location", attribute)
+    else:
+        fig2 = render_line(attribute_date, "date", attribute, "location")
+
+    fig1 = render_map(country_agg_data, "total_cases")
 
     return fig1, fig2, {"opacity": "1"}, {"opacity": "1"}

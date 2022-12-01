@@ -44,7 +44,7 @@ def render_country_lines(data, countries,  y_column_1, y_column_2, x_column, cou
                   x = country_data[x_column],
                   y = country_data[y_column_2],
                   mode = 'lines',
-                  opacity=0.5,
+                  opacity=0.3,
                   line={'dash': 'solid', 'color': color},
                   name = f"{country}, <br>{attr2_label}"),
                   secondary_y=True)

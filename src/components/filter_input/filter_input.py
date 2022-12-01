@@ -7,7 +7,7 @@ def render_filter_input(id):
     return html.Div(
         [
             html.Div(
-                get_our_world_in_data_attributes[id]["label"],
+                f'Mean {get_our_world_in_data_attributes[id]["label"]}',
                 className="sub-title"
             ),
             dbc.Input(

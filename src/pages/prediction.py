@@ -124,7 +124,8 @@ layout = three_splitter_v1(
                 dbc.Button(
                     "Run Prediction Model",
                     color="success",
-                    id="predict-run-model"
+                    id="predict-run-model",
+                    className='success-button'
                 ),
 
                 dcc.Store(id='predict-model-parameter-data')
@@ -224,7 +225,7 @@ def update_all_graphs(iso_code, attribute, relayoutData, model, model_attribute,
     start_date, end_date = get_date_range(relayoutData)
 
     attribute_data = get_attribute(
-        attribute, start_date, end_date, iso_code)
+        attribute, start_date, end_date, iso_code, None, False)
 
     fig1 = render_line(
         attribute_data, "date", attribute)

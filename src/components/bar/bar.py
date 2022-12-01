@@ -19,7 +19,7 @@ def render_bar_compare(df, y_column_1, y_column_2, x_column, color_column=None):
                     go.Bar(name=attr1_label, x=df[x_column], y=df[y_column_1], yaxis='y', offsetgroup=1),
                     go.Bar(name=attr2_label, x=df[x_column], y=df[y_column_2], yaxis='y2', offsetgroup=2)
                     ], )
-    fig.update_layout(margin=dict(l=20, r=20, t=20, b=20))
+    fig.update_layout(margin=dict(r=20, t=20, b=20))
     fig.update_xaxes(title_text=x_label)
     fig.update_layout(barmode='group', 
                       yaxis=dict(title=attr1_label),

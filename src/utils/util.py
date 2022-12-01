@@ -1,14 +1,45 @@
-from data_layer.basic_data_layer import compute_corr_two_attributes
+from collections import namedtuple
+import functools
+import json
+import six
 
-def create_table_bar_styles(attribute_1, attribute_2, start_date, end_date, iso_code):
-    correlation = compute_corr_two_attributes(
-        attribute_1, attribute_2, start_date, end_date, iso_code)
-    data = correlation.to_dict('records')
-    columns = [{"name": i, "id": i} for i in correlation.columns]
-    style = data_bars_diverging('Correlation')
-    return data, columns, style
+Serialized = namedtuple('Serialized', 'json')
 
-def data_bars_diverging(column, color_above='#3D9970', color_below='#FF4136'):
+def hashable_cache(cache):
+    def hashable_cache_internal(func):
+        def deserialize(value):
+            if isinstance(value, Serialized):
+                return json.loads(value.json)
+            else:
+                return value
+
+        def func_with_serialized_params(*args, **kwargs):
+            _args = tuple([deserialize(arg) for arg in args])
+            _kwargs = {k: deserialize(v) for k, v in six.viewitems(kwargs)}
+            return func(*_args, **_kwargs)
+
+        cached_func = cache(func_with_serialized_params)
+
+        @functools.wraps(func)
+        def hashable_cached_func(*args, **kwargs):
+            _args = tuple([
+                Serialized(json.dumps(arg, sort_keys=True))
+                if type(arg) in (list, dict) else arg
+                for arg in args
+            ])
+            _kwargs = {
+                k: Serialized(json.dumps(v, sort_keys=True))
+                if type(v) in (list, dict) else v
+                for k, v in kwargs.items()
+            }
+            return cached_func(*_args, **_kwargs)
+        hashable_cached_func.cache_info = cached_func.cache_info
+        hashable_cached_func.cache_clear = cached_func.cache_clear
+        return hashable_cached_func
+
+    return hashable_cache_internal
+
+def data_bars_diverging(column, color_above='rgb(187 247 208)', color_below='rgb(254 205 211)'):
     n_bins = 100
     bounds = [i * (1.0 / n_bins) for i in range(n_bins + 1)]
     col_max = 1

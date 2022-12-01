@@ -6,12 +6,9 @@ from components.line.line import render_line, render_two_lines, render_country_l
 from components.bar.bar import render_bar_compare
 from components.layouts.page_layouts import three_splitter_v2
 from crawlers.url_crawlers import get_our_world_in_data_attributes
-from data_layer.basic_data_layer import get_list_of_countries, get_total_number_of_cases_by_date, get_attribute, get_filtered_countries
-from utils.util import data_bars_diverging, create_table_bar_styles
+from data_layer.basic_data_layer import get_list_of_countries, get_total_number_of_cases_by_date, get_attribute, get_filtered_countries, create_table_bar_styles
 import dash_bootstrap_components as dbc
 import plotly.graph_objects as go
-import pandas as pd
-import numpy as np
 from utils.date_range import get_date_range
 from utils.expression_parser import parse
 from components.filter_input.filter_input import render_filter_input
@@ -41,7 +38,7 @@ layout = three_splitter_v2(
                   id="analyse-main-graph-2",
                   className="main-graph",
                   style={"opacity": "0"})),
-                    className="card"),
+        className="card"),
     bottom=html.Div(dcc.Loading(dcc.Graph(figure={},
                                           id="analyse-bottom-graph",
                                           className="bottom-graph",
@@ -54,61 +51,83 @@ layout = three_splitter_v2(
         html.Div([
             html.Div("Selector Panel", className="title"),
             html.Div("Country", className="sub-title"),
-            dbc.Select(options=[{
-                "value": "All",
-                "label": "All"
-            }, *[{
-                "value": country,
-                "label": countries.get(country, {}).get('label')
-            } for country in countries]],
-                       value="All",
-                       id="analyse-country-dropdown",
-                       class_name="select"),
+            dcc.Dropdown(
+                options=[
+                    {
+                        "value": "All",
+                        "label": "All"
+                    },
+                    *[{
+                        "value": country,
+                        "label": countries.get(country, {}).get('label')
+                    } for country in countries
+                    ]
+                ],
+                value="All",
+                id="analyse-country-dropdown",
+                multi=False,
+                clearable=False,
+            ),
             html.Div([
                 html.Div("Primary Attribute", className="sub-title"),
                 html.Div("Aggregation", className="sub-title"),
             ],
-                     className="attribute-selectors"),
-            html.Div([
-                dbc.Select(options=[{
-                    "value": attributes,
-                    "label": attributes_info['label']
-                } for attributes, attributes_info in list_of_attributes],
-                           value="new_cases",
-                           id="analyse-attribute1-dropdown",
-                           class_name="select"),
-                dbc.Select(options=[{
-                    "value": "mean",
-                    "label": "Mean"
-                }, {
-                    "value": "sum",
-                    "label": "Sum"
-                }, {
-                    "value": "latest",
-                    "label": "Latest"
-                }, {
-                    "value": "none",
-                    "label": "None"
-                }],
-                           value="none",
-                           id="analyse-aggregation1-dropdown",
-                           class_name="select"),
-            ],
-                     className="attribute-selectors"),
+                className="attribute-selectors"),
+            html.Div(
+                [
+                    dcc.Dropdown(
+                        options=[
+                            {
+                                "value": attributes,
+                                "label": attributes_info['label']
+                            } for attributes, attributes_info in list_of_attributes
+                        ],
+                        value="new_cases",
+                        id="analyse-attribute1-dropdown",
+                        multi=False,
+                        clearable=False
+                    ),
+                    dcc.Dropdown(
+                        options=[{
+                            "value": "mean",
+                            "label": "Mean"
+                        },
+                            {
+                            "value": "sum",
+                            "label": "Sum"
+                        },
+                            {
+                            "value": "latest",
+                            "label": "Latest"
+                        },
+                            {
+                            "value": "none",
+                            "label": "None"
+                        }
+                        ],
+                        value="none",
+                        id="analyse-aggregation1-dropdown",
+                        multi=False,
+                        clearable=False
+                    ),
+                ],
+                className="attribute-selectors"),
             html.Div([
                 html.Div("Secondary Attribute", className="sub-title"),
                 html.Div("Aggregation", className="sub-title"),
             ],
-                     className="attribute-selectors"),
+                className="attribute-selectors"),
             html.Div([
-                dbc.Select(options=[{
+                dcc.Dropdown(options=[{
                     "value": attributes,
                     "label": attributes_info['label']
                 } for attributes, attributes_info in list_of_attributes],
-                           value="new_deaths",
-                           id="analyse-attribute2-dropdown",
-                           class_name="select"),
-                dbc.Select(options=[{
+                    value="new_deaths",
+                    id="analyse-attribute2-dropdown",
+                    multi=False,
+                    clearable=False
+                ),
+                dcc.Dropdown(options=[{
                     "value": "mean",
                     "label": "Mean"
                 }, {
@@ -121,13 +140,15 @@ layout = three_splitter_v2(
                     "value": "none",
                     "label": "None"
                 }],
-                           value="none",
-                           id="analyse-aggregation2-dropdown",
-                           class_name="select"),
+                    value="none",
+                    id="analyse-aggregation2-dropdown",
+                    multi=False,
+                    clearable=False
+                ),
             ],
-                     className="attribute-selectors")
+                className="attribute-selectors")
         ],
-                 className="action-wrapper"),
+            className="action-wrapper"),
         html.Div([
             html.Div("Filter Panel", className="title"),
             dcc.Dropdown(options=[{
@@ -136,18 +157,18 @@ layout = three_splitter_v2(
                 "label":
                 countries.get(country, {}).get('label')
             } for country in countries],
-                         multi=True,
-                         placeholder="Filter by countries",
-                         id="analyse-country-filter",
-                         value=['NOR', 'IND']),
+                multi=True,
+                placeholder="Filter by countries",
+                id="analyse-country-filter",
+                value=['NOR', 'IND']),
             dcc.Dropdown(options=[{
                 "value": attributes,
                 "label": attributes_info['label']
             } for attributes, attributes_info in list_of_attributes],
-                         multi=True,
-                         placeholder="Filter by attributes",
-                         id="analyse-attribute-filter",
-                         value=None),
+                multi=True,
+                placeholder="Filter by attributes",
+                id="analyse-attribute-filter",
+                value=None),
             html.Div([],
                      className="filter-advanced-container",
                      id="analyse-filter-advanced-container"),
@@ -158,11 +179,11 @@ layout = three_splitter_v2(
                      className="filter-advanced-success-container",
                      id="analyse-filter-advanced-success-container"),
             dbc.Button(
-                "Apply Filter", color="success", id="analyse-apply-filter"),
+                "Apply Filter", color="success", id="analyse-apply-filter", className='success-button'),
             dcc.Store(id='analyse-filter-data')
         ],
-                 id="analyse-filter-panel",
-                 className="action-wrapper filter-panel")
+            id="analyse-filter-panel",
+            className="action-wrapper filter-panel")
     ],
     id="analyse-page")
 
@@ -202,7 +223,6 @@ def update_advanced_filter(attributes, children):
         'type': 'filter-input',
         'index': ALL
     }, 'value'))
-
 def update_filter(n_clicks, countries, attribute, filter_expressions):
     error_in = []
     filter_data = []
@@ -248,23 +268,17 @@ def up_date_bottom_graph(iso_code, relayoutData, filter_data):
     start_date, end_date = get_date_range(relayoutData)
 
     if iso_code == "All":
-        filter_data = json.loads(filter_data)
+        filter_data = json.loads(
+            filter_data) if filter_data is not None else {}
         iso_code = filter_data.get("countries", None)
-        total_num_cases = get_total_number_of_cases_by_date(
-            iso_code=iso_code, start_date=start_date, end_date=end_date)
-        return render_line(total_num_cases, "date", "total_cases",
-                           "location"), {
-                               "opacity": "1"
-                           }
-    else:
-        total_num_cases = get_total_number_of_cases_by_date(
-            iso_code=iso_code, start_date=start_date, end_date=end_date)
-        total_num_cases = total_num_cases
-        return render_line(total_num_cases, "date", "total_cases"), {
-            "opacity": "1"
-        }
+
+    total_num_cases = get_total_number_of_cases_by_date(
+        iso_code=iso_code, start_date=start_date, end_date=end_date)
+    return render_line(total_num_cases, "date", "total_cases", "location"), {"opacity": "1"}
 
 # --------------------------- AGGREGATION ENFORCER --------------------------- #
+
+
 @callback(
     Output("analyse-aggregation1-dropdown", "value"),
     Output("analyse-aggregation2-dropdown", "value"),
@@ -276,7 +290,7 @@ def aggregation_logic_enforcer(aggregation_type_1, aggregation_type_2):
         if aggregation_type_1 != 'none' and aggregation_type_2 == 'none':
             # enforce aggregation 2 to mean
             return aggregation_type_1, 'mean'
-        
+
         if aggregation_type_1 == 'none' and aggregation_type_2 != 'none':
             # enforce aggregation 2 to none
             return aggregation_type_1, 'none'
@@ -284,11 +298,11 @@ def aggregation_logic_enforcer(aggregation_type_1, aggregation_type_2):
         if aggregation_type_1 == 'none' and aggregation_type_2 != 'none':
             # enforce aggregation 1 to mean
             return 'mean', aggregation_type_2
-        
+
         if aggregation_type_1 != 'none' and aggregation_type_2 == 'none':
             # enforce aggregation 1 to none
             return 'none', aggregation_type_2
-    
+
     raise PreventUpdate
 
 
@@ -326,23 +340,21 @@ def update_all_graphs(iso_code, attribute_1, attribute_2, aggregation_type_1, ag
         iso_code = filter_data.get("countries", None)
 
         attribute_date_1 = get_attribute(attribute_1, start_date, end_date,
-                                         iso_code, aggregation_type_1, True)
+                                         iso_code, aggregation_type_1)
         attribute_date_2 = get_attribute(attribute_2, start_date, end_date,
-                                         iso_code, aggregation_type_2, True)
+                                         iso_code, aggregation_type_2)
         attribute_date_1[attribute_2] = attribute_date_2[attribute_2]
 
         column_data, columns, style = create_table_bar_styles(
             attribute_1, attribute_2, start_date, end_date, iso_code)
 
-        # if aggregation_type_1 == "mean" or aggregation_type_1 == "sum" or aggregation_type_1 == "latest":
         if aggregation_type_1 != 'none' and aggregation_type_2 != 'none':
-            print(attribute_date_1, aggregation_type_1, aggregation_type_2)
             fig2 = render_bar_compare(attribute_date_1, attribute_1,
                                       attribute_2, "location")
             fig1 = go.Figure()
             fig1.update_layout(
-                    margin=dict(r=12, t=24, b=16),
-                )
+                margin=dict(r=12, t=24, b=16),
+            )
         else:
             countries = attribute_date_1.groupby('location').first()
             fig2 = render_country_lines(attribute_date_1, countries,
@@ -350,23 +362,22 @@ def update_all_graphs(iso_code, attribute_1, attribute_2, aggregation_type_1, ag
                                         "location")
             fig1 = go.Figure()
             fig1.update_layout(
-                    margin=dict(r=12, t=24, b=16),
-                )
+                margin=dict(r=12, t=24, b=16),
+            )
     else:
         attribute_data_1 = get_attribute(attribute_1, start_date, end_date,
-                                         iso_code, aggregation_type_1, True)
+                                         iso_code, aggregation_type_1)
         attribute_data_2 = get_attribute(attribute_2, start_date, end_date,
-                                         iso_code, aggregation_type_2, True)
+                                         iso_code, aggregation_type_2)
         attribute_data_1[attribute_2] = attribute_data_2[attribute_2]
         column_data, columns, style = create_table_bar_styles(
             attribute_1, attribute_2, start_date, end_date, iso_code)
-        
-        # if aggregation_type_1 == "mean" or aggregation_type_1 == "sum" or aggregation_type_1 == "latest":
+
         if aggregation_type_1 != 'none' and aggregation_type_2 != 'none':
             fig1 = go.Figure()
             fig1.update_layout(
-                    margin=dict(r=12, t=24, b=16),
-                )
+                margin=dict(r=12, t=24, b=16),
+            )
             fig2 = render_bar_compare(attribute_data_1, attribute_1,
                                       attribute_2, "location")
         else:

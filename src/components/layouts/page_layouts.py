@@ -4,7 +4,15 @@ from ..nav.nav import render_nav
 
 def app_bar():
     return html.Div([
-        html.Div([]),
+        html.Div(
+            [
+                html.Div([
+                    html.I(className="fa-sharp fa-solid fa-virus logo")
+                ], className="logo-container"),
+                html.Div("VIZDOM", className="app-title"),
+            ],
+            className="app-bar-left",
+        ),
         html.Div(
             render_nav()
         ),
