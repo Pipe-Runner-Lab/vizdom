@@ -281,7 +281,7 @@ def update_all_graphs(iso_code, attribute, aggregation_type, relayoutData, filte
         country_agg_data = get_aggregated_total_cases_by_country(
             start_date, end_date, iso_code)
         attribute_date = get_attribute(
-            attribute, start_date, end_date, iso_code, aggregation_type)
+            attribute, start_date, end_date, iso_code, aggregation_type, True)
 
         if aggregation_type == "mean":
             fig2 = render_bar(attribute_date, "location", attribute)
@@ -293,7 +293,7 @@ def update_all_graphs(iso_code, attribute, aggregation_type, relayoutData, filte
         country_agg_data = get_aggregated_total_cases_by_country(
             start_date, end_date, iso_code)
         attribute_date = get_attribute(
-            attribute, start_date, end_date, iso_code)
+            attribute, start_date, end_date, iso_code, True)
         fig1, fig2 = render_map(country_agg_data, "total_cases"), render_line(
             attribute_date, "date", attribute)
 

@@ -38,14 +38,18 @@ def get_aggregated_total_cases_by_country(start_date=None, end_date=None, iso_co
     return df
 
 
-def get_attribute(attribute, start_date=None, end_date=None, iso_code=None, aggregation_type=None, resample=True):
+def get_attribute(attribute, start_date=None, end_date=None, iso_code=None, aggregation_type=None, resample=False):
     query = query_creator(iso_code=iso_code, start_date=start_date, end_date=end_date)
     df = DBConnection().get_df(f'date, location, {attribute}', 'covid', query)
     
+    
     # When aggregation is done, we don't need to resample since date will have no meaning
     if aggregation_type == "mean":
-        df = df.groupby(['location']).mean().reset_index()
-        return df
+        return get_aggregate(df, attribute, aggregation_type)
+    elif aggregation_type == "sum":
+        return get_aggregate(df, attribute, aggregation_type)
+    elif aggregation_type == "latest":
+        return get_latest(df, attribute)
     if resample:
         return resample_by_date_range(df, start_date, end_date)
     return df
@@ -65,15 +69,41 @@ def get_list_of_countries():
     return dict
 
 def compute_corr_two_attributes(attribute_1, attribute_2, start_date=None, end_date=None, iso_code=None):
-    df1 = get_attribute(attribute_1, start_date, end_date, iso_code, iso_code, False)
-    df2 = get_attribute(attribute_2, start_date, end_date, iso_code, iso_code, False)
+    df1 = get_attribute(attribute_1, start_date, end_date, iso_code) 
+    df2 = get_attribute(attribute_2, start_date, end_date, iso_code)
     df1[attribute_2] = df2[attribute_2]
     unique_countries = df1.location.unique()
     corr_matrix = []
     for country in unique_countries:
         data = df1[df1.location == country]
         corr = pearsonr(data[attribute_1], data[attribute_2])
-        corr_matrix.append([country, round(corr[0], 3)])
+        corr_matrix.append([country, round(corr[0], 5)])
     data_corr = pd.DataFrame(corr_matrix, columns=[
                               'Country', 'Correlation'])
-    return df1, data_corr   
+    return data_corr   
+
+def get_latest(df, attribute):
+    latest_data = pd.DataFrame(columns=['location', attribute])
+    unique_countries = df.location.unique()
+    for country in unique_countries:
+        data = df[df.location == country]
+        del data['date']
+        latest = data.tail(1)
+        latest_data = pd.concat([latest_data, latest])
+    return latest_data.reset_index()
+
+def get_aggregate(df, attribute, type):
+    agg_data = pd.DataFrame()
+    values = []
+    unique_countries = df.location.unique()
+    agg_data['location'] = unique_countries
+    for country in unique_countries:
+        data = df[df.location == country]
+        value = 0
+        if type == 'mean':
+           value = data[attribute].mean()
+        elif type == 'sum':
+           value = data[attribute].sum()
+        values.append(value)
+    agg_data[attribute] = values
+    return agg_data
