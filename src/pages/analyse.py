@@ -1,5 +1,6 @@
 import json
-from dash import html, dcc, register_page, Input, Output, callback, State, dash_table, ALL
+from dash import html, dcc, register_page, Input, Output, callback, State, dash_table, ALL, ctx
+from dash.exceptions import PreventUpdate
 from components.scatter.scatter import render_scatter
 from components.line.line import render_line, render_two_lines, render_country_lines
 from components.bar.bar import render_bar_compare
@@ -263,6 +264,33 @@ def up_date_bottom_graph(iso_code, relayoutData, filter_data):
             "opacity": "1"
         }
 
+# --------------------------- AGGREGATION ENFORCER --------------------------- #
+@callback(
+    Output("analyse-aggregation1-dropdown", "value"),
+    Output("analyse-aggregation2-dropdown", "value"),
+    Input("analyse-aggregation1-dropdown", "value"),
+    Input("analyse-aggregation2-dropdown", "value"),
+)
+def aggregation_logic_enforcer(aggregation_type_1, aggregation_type_2):
+    if ctx.triggered_id == 'analyse-aggregation1-dropdown':
+        if aggregation_type_1 != 'none' and aggregation_type_2 == 'none':
+            # enforce aggregation 2 to mean
+            return aggregation_type_1, 'mean'
+        
+        if aggregation_type_1 == 'none' and aggregation_type_2 != 'none':
+            # enforce aggregation 2 to none
+            return aggregation_type_1, 'none'
+    else:
+        if aggregation_type_1 == 'none' and aggregation_type_2 != 'none':
+            # enforce aggregation 1 to mean
+            return 'mean', aggregation_type_2
+        
+        if aggregation_type_1 != 'none' and aggregation_type_2 == 'none':
+            # enforce aggregation 1 to none
+            return 'none', aggregation_type_2
+    
+    raise PreventUpdate
+
 
 @callback(
     Output("analyse-main-graph-1", "figure"),
@@ -283,6 +311,11 @@ def up_date_bottom_graph(iso_code, relayoutData, filter_data):
     Input("analyse-filter-data", "data"),
 )
 def update_all_graphs(iso_code, attribute_1, attribute_2, aggregation_type_1, aggregation_type_2, relayoutData, filter_data):
+    if aggregation_type_1 == 'none' and aggregation_type_2 != 'none':
+        raise PreventUpdate
+    elif aggregation_type_1 != 'none' and aggregation_type_2 == 'none':
+        raise PreventUpdate
+
     start_date, end_date = get_date_range(relayoutData)
     column_data = None
     columns = None

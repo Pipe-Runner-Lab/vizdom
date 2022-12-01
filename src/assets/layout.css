@@ -142,3 +142,12 @@
 .filter-advanced-error-container, .filter-advanced-success-container {
   flex: 1;
 }
+
+.filter-advanced-success-container{
+  display: flex;
+  align-items: flex-end;
+}
+
+.filter-advanced-success-container > * {
+  flex: 1;
+}
