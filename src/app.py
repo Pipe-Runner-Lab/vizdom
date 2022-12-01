@@ -1,5 +1,6 @@
 from dash import Dash, html, page_container
 import dash_bootstrap_components as dbc
+import os
 
 app = Dash(__name__, use_pages=True,
            external_stylesheets=[
@@ -21,4 +22,8 @@ if __name__ == '__main__':
     )
 
     # * The debug=True flag is used to enable hot reloading
-    app.run_server(debug=True)
+    if os.environ['ENV'] == 'PROD':
+        print("----------> [ Running in production mode. ] <----------")
+        app.run_server(debug=False, host='0.0.0.0', port = 8080)
+    else:
+        app.run_server(debug=True)
