@@ -23,12 +23,12 @@ def render_line(data, x_column, y_column, color_column=None):
     
 
 
-def render_country_lines(data, y_column_1, y_column_2, x_column, country, color_column=None):
+def render_country_lines(data, countries,  y_column_1, y_column_2, x_column, country, color_column=None):
     fig = make_subplots(specs=[[{"secondary_y": True}]])
     attr1_label = get_our_world_in_data_attributes[y_column_1]["label"]
     attr2_label = get_our_world_in_data_attributes[y_column_2]["label"]
     date_label = get_our_world_in_data_attributes[x_column]["label"]
-    countries = data.groupby('location').first()
+    
     
     for idx, country in enumerate(countries.index):  
         color = px.colors.qualitative.Alphabet[idx % len(px.colors.qualitative.Alphabet)]
@@ -56,20 +56,20 @@ def render_country_lines(data, y_column_1, y_column_2, x_column, country, color_
     fig.update_yaxes(title_text=f"{attr2_label}", secondary_y=True)
     return  fig
   
-def render_two_lines(df1, df2, x_column, y_column_1, y_column_2, color_column=None):
+def render_two_lines(df, y_column_1, y_column_2, x_column, color_column=None):
     fig = make_subplots(specs=[[{"secondary_y": True}]])
     attr1_label = get_our_world_in_data_attributes[y_column_1]["label"]
     attr2_label = get_our_world_in_data_attributes[y_column_2]["label"]
     date_label = get_our_world_in_data_attributes[x_column]["label"]
     fig.add_trace(go.Scatter(
-                  x = df1[x_column],
-                  y = df1[y_column_1],
+                  x = df[x_column],
+                  y = df[y_column_1],
                   mode = 'lines',
                   name = attr1_label),
                   secondary_y=False)
     fig.add_trace(go.Scatter(
-                  x = df2[x_column],
-                  y = df2[y_column_2],
+                  x = df[x_column],
+                  y = df[y_column_2],
                   mode = 'lines',
                   name = attr2_label),
                   secondary_y=True)

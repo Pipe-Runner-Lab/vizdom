@@ -1,13 +1,13 @@
 import plotly.graph_objects as go 
 from crawlers.url_crawlers import get_our_world_in_data_attributes
 
-def render_scatter(df1, df2, x_column, y_column): 
+def render_scatter(df, x_column, y_column): 
     attr1_label = get_our_world_in_data_attributes[x_column]["label"]
     attr2_label = get_our_world_in_data_attributes[y_column]["label"]
     fig = go.Figure()
     fig.add_trace(go.Scatter(
-                  x = df1[x_column],
-                  y = df2[y_column],
+                  x = df[x_column],
+                  y = df[y_column],
                   mode = 'markers', 
                  ))
     fig.update_layout(legend=dict(

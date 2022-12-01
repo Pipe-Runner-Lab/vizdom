@@ -1,12 +1,12 @@
 from data_layer.basic_data_layer import compute_corr_two_attributes
 
 def create_table_bar_styles(attribute_1, attribute_2, start_date, end_date, iso_code):
-    df ,correlation = compute_corr_two_attributes(
+    correlation = compute_corr_two_attributes(
         attribute_1, attribute_2, start_date, end_date, iso_code)
     data = correlation.to_dict('records')
     columns = [{"name": i, "id": i} for i in correlation.columns]
     style = data_bars_diverging('Correlation')
-    return df, data, columns, style
+    return data, columns, style
 
 def data_bars_diverging(column, color_above='#3D9970', color_below='#FF4136'):
     n_bins = 100
