@@ -4,10 +4,10 @@ from components.line.line import render_line, render_prediction_line
 from components.layouts.page_layouts import three_splitter_v1
 from data_layer.basic_data_layer import get_list_of_countries, get_total_number_of_cases_by_date, get_attribute
 import dash_bootstrap_components as dbc
-from crawlers.url_crawlers import get_our_world_in_data_attributes, get_our_world_in_data_real_attributes
+from crawlers.url_crawlers import get_our_world_in_data_real_attributes
 from components.filter_input.filter_input import render_filter_input
 from utils.date_range import get_date_range
-from data_layer.predict import get_prediction
+from data_layer.predict import get_prediction, model_params
 
 # * static data
 countries = get_list_of_countries()
@@ -101,6 +101,15 @@ layout = three_splitter_v1(
                     value='lasso',
                 ),
                 html.Div(
+                    "Model Parameters",
+                    className="sub-title"
+                ),
+                html.Div(
+                    [],
+                    className="filter-advanced-container",
+                    id="predict-model-parameters-container"
+                ),
+                html.Div(
                     "Model Attribute Dependency",
                     className="sub-title"
                 ),
@@ -111,11 +120,6 @@ layout = three_splitter_v1(
                     placeholder="Select attributes for model",
                     id="predict-model-attribute-dropdown",
                     value=None,
-                ),
-                html.Div(
-                    [],
-                    className="filter-advanced-container",
-                    id="predict-model-parameters-container"
                 ),
                 html.Div(
                     [],
@@ -146,15 +150,15 @@ layout = three_splitter_v1(
 @ callback(
     Output("predict-model-parameters-container", "children"),
     Input("predict-model-dropdown", "value"),
-    State("predict-model-parameters-container", "children"),
-    prevent_initial_call=True
+    State("predict-model-parameters-container", "children")
 )
 def update_model_parameter(model, children):
-    if model is None:
+    params = model_params.get(model, None)
+    if params is None:
         return []
 
-    # need a list of model params to add params on the fly
-    return [render_filter_input(attribute, 'model-parameter-input') for attribute in []]
+    params_list = params.items()
+    return [render_filter_input(param, 'model-parameter-input', value=value, label=param, placeholder="Parameter value") for param, value in params_list]
 
 
 @ callback(
@@ -176,9 +180,17 @@ def run_prediction(n_clicks, iso_code, target, model, attribute, model_parameter
     success_block = dbc.Alert(
         success_message, color="success", class_name="alert")
 
+    temp_params = None
+    params = model_params.get(model, None)
+    if params is not None:
+        temp_params = {}
+        param_keys = params.keys()
+        for i, param in enumerate(param_keys):
+            temp_params[param] = model_parameter[i] if model_parameter[i] != '' else None
     data = {
         "model": model,
         "attribute": attribute,
+        "params": temp_params
     }
 
     return json.dumps(data), success_block
@@ -217,7 +229,7 @@ def update_bottom_graph(iso_code, relayoutData):
     Input("predict-model-parameter-data", "data"),
     prevent_initial_call=True
 )
-def update_all_graphs(iso_code, attribute, relayoutData, parameter_data):
+def update_all_graphs(iso_code, attribute, relayoutData, model_data_raw):
     should_predict = False
     if ctx.triggered_id == 'predict-model-parameter-data' or ctx.triggered_id == 'predict-bottom-graph':
         should_predict = True
@@ -225,15 +237,22 @@ def update_all_graphs(iso_code, attribute, relayoutData, parameter_data):
     start_date, end_date = get_date_range(relayoutData)
 
     model_data = json.loads(
-        parameter_data) if parameter_data is not None else None
+        model_data_raw) if model_data_raw is not None else None
 
     attribute_data = get_attribute(
         attribute, start_date, end_date, iso_code, None, False)
 
     if model_data and should_predict:
         prediction, data_shifted = get_prediction(
-            model_data['model'], attribute, iso_code, model_data['attribute'])
-        fig1 = render_prediction_line(attribute_data, attribute, data_shifted, prediction)
+            model_data['model'],
+            attribute,
+            iso_code,
+            model_data['attribute'],
+            params=model_data['params']
+        )
+
+        fig1 = render_prediction_line(
+            attribute_data, attribute, data_shifted, prediction)
     else:
         fig1 = render_prediction_line(attribute_data, attribute)
 

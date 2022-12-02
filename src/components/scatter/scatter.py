@@ -1,5 +1,4 @@
 import plotly.express as px
-import pandas as pd
 from crawlers.url_crawlers import get_our_world_in_data_attributes
 
 def render_scatter(df, x_column, y_column, color_column = None, aggregation_type_1 = " ", aggregation_type_2 = " "): 
