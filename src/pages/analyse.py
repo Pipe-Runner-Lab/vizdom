@@ -165,7 +165,7 @@ layout = three_splitter_v2(
             dcc.Dropdown(options=[{
                 "value": attributes,
                 "label": attributes_info['label']
-            } for attributes, attributes_info in list_of_attributes],
+            } for attributes, attributes_info in list_of_real_attributes],
                 multi=True,
                 placeholder="Filter by attributes",
                 id="analyse-attribute-filter",
