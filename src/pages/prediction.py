@@ -1,15 +1,13 @@
 import json
-from dash import html, dcc, register_page, Input, Output, callback, State, ALL
-from components.map.map import render_map
-from components.line.line import render_line
-from components.bar.bar import render_bar
+from dash import html, dcc, register_page, Input, Output, callback, State, ALL, ctx, no_update
+from components.line.line import render_line, render_prediction_line
 from components.layouts.page_layouts import three_splitter_v1
-from data_layer.basic_data_layer import get_aggregated_total_cases_by_country, get_list_of_countries, get_total_number_of_cases_by_date, get_attribute, get_filtered_countries
+from data_layer.basic_data_layer import get_list_of_countries, get_total_number_of_cases_by_date, get_attribute
 import dash_bootstrap_components as dbc
 from crawlers.url_crawlers import get_our_world_in_data_attributes
 from components.filter_input.filter_input import render_filter_input
 from utils.date_range import get_date_range
-from utils.expression_parser import parse
+from data_layer.predict import get_prediction
 
 # * static data
 countries = get_list_of_countries()
@@ -57,24 +55,26 @@ layout = three_splitter_v1(
                     "Country",
                     className="sub-title"
                 ),
-                dbc.Select(
+                dcc.Dropdown(
                     options=[
                         *[{"value": country, "label": countries.get(country, {}).get('label')} for country in countries]
                     ],
                     value="NOR",
                     id="predict-country-dropdown",
-                    class_name="select"
+                    multi=False,
+                    clearable=False,
                 ),
                 html.Div(
                     "Attribute",
                     className="sub-title"
                 ),
-                dbc.Select(
+                dcc.Dropdown(
                     options=[{"value": attributes, "label": attributes_info['label']}
                              for attributes, attributes_info in list_of_attributes],
                     value="new_deaths",
                     id="predict-attribute-dropdown",
-                    class_name="select"
+                    multi=False,
+                    clearable=False,
                 )
             ],
             className="action-wrapper"
@@ -91,13 +91,14 @@ layout = three_splitter_v1(
                 ),
                 dcc.Dropdown(
                     options=[
-                        {"value": "lasso", "label": "Lasso"},
-                        {"value": "ridge", "label": "Ridge"}
+                        {"value": "lasso", "label": "Lasso Regression"},
+                        {"value": "ridge", "label": "Ridge Regression"}
                     ],
                     multi=False,
+                    clearable=False,
                     placeholder="Select a model type",
                     id="predict-model-dropdown",
-                    value=None,
+                    value='lasso',
                 ),
                 html.Div(
                     "Model Attribute Dependency",
@@ -148,42 +149,39 @@ layout = three_splitter_v1(
     State("predict-model-parameters-container", "children"),
     prevent_initial_call=True
 )
-def update_model_parameter(attributes, children):
-    if attributes is None:
+def update_model_parameter(model, children):
+    if model is None:
         return []
-    return [render_filter_input(attribute) for attribute in attributes]
+
+    # need a list of model params to add params on the fly
+    return [render_filter_input(attribute, 'model-parameter-input') for attribute in []]
 
 
 @ callback(
     Output("predict-model-parameter-data", "data"),
     Output("predict-filter-advanced-success-container", "children"),
     Input("predict-run-model", "n_clicks"),
+    Input("predict-country-dropdown", "value"),
+    Input("predict-attribute-dropdown", "value"),
     State("predict-model-dropdown", "value"),
     State("predict-model-attribute-dropdown", "value"),
-    State({'type': 'filter-input', 'index': ALL}, 'value'),
+    State({'type': 'model-parameter-input', 'index': ALL}, 'value'),
     prevent_initial_call=True
 )
-def run_prediction(n_clicks, countries, attribute, filter_expressions):
-    error_in = []
-    filter_data = []
+def run_prediction(n_clicks, iso_code, target, model, attribute, model_parameter):
+    if ctx.triggered_id == 'predict-country-dropdown' or ctx.triggered_id == 'predict-attribute-dropdown':
+        return no_update, None
 
-    if attribute is not None:
-        for attribute_command in zip(attribute, filter_expressions):
-            try:
-                filter_data.append(
-                    (attribute_command[0], parse(attribute_command[1])))
-            except Exception as e:
-                error_in.append(attribute_command[0])
-
-    if len(filter_data) > 0:
-        countries = get_filtered_countries(countries, filter_data)
-
-    success_message = "Found " + str(len(countries)) + " countries" if len(
-        countries) > 0 else "No countries found, showing all countries"
+    success_message = "Prediction complete"
     success_block = dbc.Alert(
         success_message, color="success", class_name="alert")
 
-    return json.dumps({"countries": countries}), success_block
+    data = {
+        "model": model,
+        "attribute": attribute,
+    }
+
+    return json.dumps(data), success_block
 
 # ---------------------------------------------------------------------------- #
 #                            BOTTOM GRAPH CALLBACKS                            #
@@ -203,7 +201,7 @@ def update_bottom_graph(iso_code, relayoutData):
         iso_code=iso_code, start_date=start_date, end_date=end_date)
     total_num_cases = total_num_cases
     return render_line(total_num_cases, "date", "total_cases"),  {"opacity": "1"}
-        
+
 
 # ---------------------------------------------------------------------------- #
 #                                DATA CALLBACKS                                #
@@ -216,18 +214,27 @@ def update_bottom_graph(iso_code, relayoutData):
     Input("predict-country-dropdown", "value"),
     Input("predict-attribute-dropdown", "value"),
     Input("predict-bottom-graph", "relayoutData"),
-    Input("predict-model-dropdown", "value"),
-    Input("predict-model-attribute-dropdown", "value"),
     Input("predict-model-parameter-data", "data"),
     prevent_initial_call=True
 )
-def update_all_graphs(iso_code, attribute, relayoutData, model, model_attribute, parameter_data):
+def update_all_graphs(iso_code, attribute, relayoutData, parameter_data):
+    should_predict = False
+    if ctx.triggered_id == 'predict-model-parameter-data':
+        should_predict = True
+
     start_date, end_date = get_date_range(relayoutData)
+
+    model_data = json.loads(
+        parameter_data) if parameter_data is not None else None
 
     attribute_data = get_attribute(
         attribute, start_date, end_date, iso_code, None, False)
 
-    fig1 = render_line(
-        attribute_data, "date", attribute)
+    if model_data and should_predict:
+        prediction, data_shifted = get_prediction(
+            model_data['model'], attribute, iso_code, model_data['attribute'])
+        fig1 = render_prediction_line(attribute_data, attribute, data_shifted, prediction)
+    else:
+        fig1 = render_prediction_line(attribute_data, attribute)
 
     return fig1, {"opacity": "1"}

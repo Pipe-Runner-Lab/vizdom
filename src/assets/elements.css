@@ -17,10 +17,23 @@
 }
 
 .logo {
+  display: flex;
+  justify-content: center;
+  align-items: center;
   height: 100%;
   width: 100%;
-  font-size: 26px;
+  font-size: 28px;
   color: rgb(244 63 94);
+  /* animation: rotation 20s infinite linear; */
+}
+
+@keyframes rotation {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(359deg);
+  }
 }
 
 .main-graph, .bottom-graph {

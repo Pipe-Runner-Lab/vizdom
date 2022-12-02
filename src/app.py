@@ -22,7 +22,7 @@ if __name__ == '__main__':
     )
 
     # * The debug=True flag is used to enable hot reloading
-    if os.environ['ENV'] == 'PROD':
+    if os.environ.get('ENV', None) == 'PROD':
         print("----------> [ Running in production mode. ] <----------")
         app.run_server(debug=False, host='0.0.0.0', port = 8080)
     else:
