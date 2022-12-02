@@ -5,8 +5,8 @@ from components.scatter.scatter import render_scatter
 from components.line.line import render_line, render_two_lines, render_country_lines
 from components.bar.bar import render_bar_compare
 from components.layouts.page_layouts import three_splitter_v2
-from crawlers.url_crawlers import get_our_world_in_data_attributes
-from data_layer.basic_data_layer import get_list_of_countries, get_total_number_of_cases_by_date, get_attribute, get_filtered_countries, create_table_bar_styles
+from crawlers.url_crawlers import get_our_world_in_data_attributes, get_our_world_in_data_real_attributes
+from data_layer.basic_data_layer import get_list_of_countries, get_total_number_of_cases_by_date, get_attribute, get_filtered_countries, create_table_bar_styles_multiple_countries, create_table_bar_styles
 import dash_bootstrap_components as dbc
 import plotly.graph_objects as go
 from utils.date_range import get_date_range
@@ -17,6 +17,7 @@ from components.filter_input.filter_input import render_filter_input
 
 countries = get_list_of_countries()
 list_of_attributes = get_our_world_in_data_attributes.items()
+list_of_real_attributes = get_our_world_in_data_real_attributes.items() 
 # * Register route
 register_page(__name__, path="/analyse")
 
@@ -80,7 +81,7 @@ layout = three_splitter_v2(
                             {
                                 "value": attributes,
                                 "label": attributes_info['label']
-                            } for attributes, attributes_info in list_of_attributes
+                            } for attributes, attributes_info in list_of_real_attributes
                         ],
                         value="new_cases",
                         id="analyse-attribute1-dropdown",
@@ -121,7 +122,7 @@ layout = three_splitter_v2(
                 dcc.Dropdown(options=[{
                     "value": attributes,
                     "label": attributes_info['label']
-                } for attributes, attributes_info in list_of_attributes],
+                } for attributes, attributes_info in list_of_real_attributes],
                     value="new_deaths",
                     id="analyse-attribute2-dropdown",
                     multi=False,
@@ -329,7 +330,7 @@ def update_all_graphs(iso_code, attribute_1, attribute_2, aggregation_type_1, ag
         raise PreventUpdate
     elif aggregation_type_1 != 'none' and aggregation_type_2 == 'none':
         raise PreventUpdate
-
+    
     start_date, end_date = get_date_range(relayoutData)
     column_data = None
     columns = None
@@ -345,22 +346,24 @@ def update_all_graphs(iso_code, attribute_1, attribute_2, aggregation_type_1, ag
                                          iso_code, aggregation_type_2)
         attribute_date_1[attribute_2] = attribute_date_2[attribute_2]
 
-        column_data, columns, style = create_table_bar_styles(
+        column_data, columns, style = create_table_bar_styles_multiple_countries(
             attribute_1, attribute_2, start_date, end_date, iso_code)
-
+        
         if aggregation_type_1 != 'none' and aggregation_type_2 != 'none':
             fig2 = render_bar_compare(attribute_date_1, attribute_1,
                                       attribute_2, "location")
-            fig1 = go.Figure()
-            fig1.update_layout(
-                margin=dict(r=12, t=24, b=16),
-            )
+            fig1 = render_scatter(attribute_date_1, attribute_1, attribute_2, 'location', aggregation_type_1, aggregation_type_2)
         else:
+            attribute_date_mean_1 = get_attribute(attribute_1, start_date, end_date,
+                                         iso_code, 'mean')
+            attribute_date_mean_2 = get_attribute(attribute_2, start_date, end_date,
+                                         iso_code, 'mean')
+            attribute_date_mean_1[attribute_2] = attribute_date_mean_2[attribute_2]
             countries = attribute_date_1.groupby('location').first()
             fig2 = render_country_lines(attribute_date_1, countries,
                                         attribute_1, attribute_2, "date",
                                         "location")
-            fig1 = go.Figure()
+            fig1 = render_scatter(attribute_date_mean_1, attribute_1, attribute_2, 'location', 'mean', 'mean')
             fig1.update_layout(
                 margin=dict(r=12, t=24, b=16),
             )
@@ -371,13 +374,11 @@ def update_all_graphs(iso_code, attribute_1, attribute_2, aggregation_type_1, ag
                                          iso_code, aggregation_type_2)
         attribute_data_1[attribute_2] = attribute_data_2[attribute_2]
         column_data, columns, style = create_table_bar_styles(
-            attribute_1, attribute_2, start_date, end_date, iso_code)
-
+            attribute_1, start_date, end_date, iso_code)
+        
         if aggregation_type_1 != 'none' and aggregation_type_2 != 'none':
-            fig1 = go.Figure()
-            fig1.update_layout(
-                margin=dict(r=12, t=24, b=16),
-            )
+            fig1 = render_scatter(attribute_data_1,
+                                  attribute_1, attribute_2)
             fig2 = render_bar_compare(attribute_data_1, attribute_1,
                                       attribute_2, "location")
         else:
@@ -389,9 +390,4 @@ def update_all_graphs(iso_code, attribute_1, attribute_2, aggregation_type_1, ag
         "opacity": "1"
     }, {
         "opacity": "1"
-    }, column_data, columns, style + [{
-        'if': {
-            'column_id': 'Country'
-        },
-        'textAlign': 'left'
-    }]
+    }, column_data, columns, style

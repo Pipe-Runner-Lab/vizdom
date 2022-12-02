@@ -6,7 +6,7 @@ from components.bar.bar import render_bar
 from components.layouts.page_layouts import three_splitter_v1
 from data_layer.basic_data_layer import get_aggregated_total_cases_by_country, get_list_of_countries, get_total_number_of_cases_by_date, get_attribute, get_filtered_countries
 import dash_bootstrap_components as dbc
-from crawlers.url_crawlers import get_our_world_in_data_attributes
+from crawlers.url_crawlers import get_our_world_in_data_attributes, get_our_world_in_data_real_attributes
 from components.filter_input.filter_input import render_filter_input
 from utils.date_range import get_date_range
 from utils.expression_parser import parse
@@ -14,7 +14,7 @@ from utils.expression_parser import parse
 # * static data
 countries = get_list_of_countries()
 list_of_attributes = get_our_world_in_data_attributes.items()
-
+list_of_real_attributes = get_our_world_in_data_real_attributes.items()
 # * Register route
 register_page(__name__, path="/")
 
@@ -96,7 +96,7 @@ layout = three_splitter_v1(
                     [
                         dcc.Dropdown(
                             options=[{"value": attributes, "label": attributes_info['label']}
-                                     for attributes, attributes_info in list_of_attributes],
+                                     for attributes, attributes_info in list_of_real_attributes],
                             value="total_cases",
                             id="explore-attribute-dropdown",
                             # class_name="select",
@@ -138,7 +138,7 @@ layout = three_splitter_v1(
                 ),
                 dcc.Dropdown(
                     options=[{"value": attributes, "label": attributes_info['label']}
-                             for attributes, attributes_info in list_of_attributes],
+                             for attributes, attributes_info in list_of_real_attributes],
                     multi=True,
                     placeholder="Filter by attributes",
                     id="explore-attribute-filter",
