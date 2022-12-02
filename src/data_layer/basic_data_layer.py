@@ -40,8 +40,8 @@ def get_filtered_countries(iso_code, attribute_conditions):
 def get_aggregated_total_cases_by_country(start_date=None, end_date=None, iso_code=None):
     query = query_creator(
         iso_code=iso_code, start_date=start_date, end_date=end_date)
-    df = DBConnection().get_df('iso_code, total_cases, location', 'covid', query)
-    df = df.groupby(['iso_code', 'location']).sum().reset_index()
+    df = DBConnection().get_df('iso_code, total_cases, location, date', 'covid', query)
+    df = get_latest(df, 'total_cases')
     return df
 
 
