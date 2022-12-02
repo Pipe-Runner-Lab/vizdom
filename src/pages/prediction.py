@@ -4,14 +4,14 @@ from components.line.line import render_line, render_prediction_line
 from components.layouts.page_layouts import three_splitter_v1
 from data_layer.basic_data_layer import get_list_of_countries, get_total_number_of_cases_by_date, get_attribute
 import dash_bootstrap_components as dbc
-from crawlers.url_crawlers import get_our_world_in_data_attributes
+from crawlers.url_crawlers import get_our_world_in_data_attributes, get_our_world_in_data_real_attributes
 from components.filter_input.filter_input import render_filter_input
 from utils.date_range import get_date_range
 from data_layer.predict import get_prediction
 
 # * static data
 countries = get_list_of_countries()
-list_of_attributes = get_our_world_in_data_attributes.items()
+list_of_real_attributes = get_our_world_in_data_real_attributes.items()
 
 # * Register route
 register_page(__name__, path="/predict")
@@ -70,7 +70,7 @@ layout = three_splitter_v1(
                 ),
                 dcc.Dropdown(
                     options=[{"value": attributes, "label": attributes_info['label']}
-                             for attributes, attributes_info in list_of_attributes],
+                             for attributes, attributes_info in list_of_real_attributes],
                     value="new_deaths",
                     id="predict-attribute-dropdown",
                     multi=False,
@@ -106,7 +106,7 @@ layout = three_splitter_v1(
                 ),
                 dcc.Dropdown(
                     options=[{"value": attributes, "label": attributes_info['label']}
-                             for attributes, attributes_info in list_of_attributes],
+                             for attributes, attributes_info in list_of_real_attributes],
                     multi=True,
                     placeholder="Select attributes for model",
                     id="predict-model-attribute-dropdown",
@@ -219,7 +219,7 @@ def update_bottom_graph(iso_code, relayoutData):
 )
 def update_all_graphs(iso_code, attribute, relayoutData, parameter_data):
     should_predict = False
-    if ctx.triggered_id == 'predict-model-parameter-data':
+    if ctx.triggered_id == 'predict-model-parameter-data' or ctx.triggered_id == 'predict-bottom-graph':
         should_predict = True
 
     start_date, end_date = get_date_range(relayoutData)

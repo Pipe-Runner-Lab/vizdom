@@ -4,20 +4,19 @@ import pandas as pd
 from connection.db_connector import DBConnection
 from .util import query_creator
 from functools import lru_cache
-from utils.util import hashable_cache, data_bars_diverging
+from utils.util import hashable_cache
+from crawlers.url_crawlers import get_our_world_in_data_real_attributes
 
-all_attributes = list(get_our_world_in_data_attributes.keys())
-all_attributes.remove('continent')
-all_attributes.remove('iso_code')
-all_attributes.remove('location')
-all_attributes.remove('date')
+list_of_real_attributes = get_our_world_in_data_real_attributes.items()
+all_attributes = [attribute for attribute, _ in list_of_real_attributes]
 
 @hashable_cache(lru_cache(maxsize=32))
 def get_prediction(model_type, target_attribute, iso_code, attribute):
     attribute = all_attributes if attribute == None else attribute
 
     query = query_creator(iso_code=iso_code)
-    data = DBConnection().get_df(f'date, location, {(", ").join(attribute)}', 'covid', query)
+    data = DBConnection().get_df(
+        f'date, location, {(", ").join(attribute)}', 'covid', query)  # type: ignore
     data.set_index('date', inplace=True)
     data.index = pd.to_datetime(data.index, errors='coerce')
     x = pd.DataFrame(data[attribute])
@@ -42,7 +41,7 @@ def get_prediction(model_type, target_attribute, iso_code, attribute):
         raise ValueError("Model type not supported")
 
     y_hat = model.predict(x_sort)
-    
+
     # move date forward by 3 months for plotting
     y_shift = y_shift.shift(90, freq='D')
 

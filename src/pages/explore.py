@@ -13,7 +13,6 @@ from utils.expression_parser import parse
 
 # * static data
 countries = get_list_of_countries()
-list_of_attributes = get_our_world_in_data_attributes.items()
 list_of_real_attributes = get_our_world_in_data_real_attributes.items()
 # * Register route
 register_page(__name__, path="/")
