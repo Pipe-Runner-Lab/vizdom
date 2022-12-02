@@ -1,5 +1,4 @@
-from sklearn.linear_model import LassoCV, Lasso, Ridge, ElasticNet
-from crawlers.url_crawlers import get_our_world_in_data_attributes
+from sklearn.linear_model import Lasso, Ridge
 import pandas as pd
 from connection.db_connector import DBConnection
 from .util import query_creator
@@ -7,12 +6,23 @@ from functools import lru_cache
 from utils.util import hashable_cache
 from crawlers.url_crawlers import get_our_world_in_data_real_attributes
 
+model_params = {
+    "lasso": {
+        "alpha": 0.1,
+        "max_iter": 10000,
+    }
+}
+
 list_of_real_attributes = get_our_world_in_data_real_attributes.items()
 all_attributes = [attribute for attribute, _ in list_of_real_attributes]
 
 @hashable_cache(lru_cache(maxsize=32))
-def get_prediction(model_type, target_attribute, iso_code, attribute):
-    attribute = all_attributes if attribute == None else attribute
+def get_prediction(model_type, target_attribute, iso_code, attribute, predict_days=90, params=None):
+    if (attribute == None or len(attribute) == 0):
+        attribute = all_attributes 
+    else:
+        attribute.append(target_attribute)
+        attribute = list(set(attribute))
 
     query = query_creator(iso_code=iso_code)
     data = DBConnection().get_df(
@@ -26,12 +36,17 @@ def get_prediction(model_type, target_attribute, iso_code, attribute):
     y_sort = y.sort_index()
 
     # move data back by 3 months
-    y_shift = y_sort.shift(-90)
+    y_shift = y_sort.shift(-predict_days)
     number_of_nans = y_shift.isnull().values.ravel().sum()
     y_shift_dropped = y_shift.dropna(axis=0)
     x_sort_dropped = x_sort.drop(x_sort.tail(number_of_nans).index)
 
     if model_type == "lasso":
+        alpha = model_params["lasso"]["alpha"]
+        max_iter = model_params["lasso"]["max_iter"]
+        if params:
+            alpha = params.get("alpha", alpha)
+            max_iter = params.get("max_iter", max_iter)
         model = Lasso(alpha=0.01)
         model.fit(x_sort_dropped, y_shift_dropped[target_attribute])
     elif model_type == "ridge":
@@ -43,6 +58,6 @@ def get_prediction(model_type, target_attribute, iso_code, attribute):
     y_hat = model.predict(x_sort)
 
     # move date forward by 3 months for plotting
-    y_shift = y_shift.shift(90, freq='D')
+    y_shift = y_shift.shift(predict_days, freq='D')
 
     return y_hat, y_shift
