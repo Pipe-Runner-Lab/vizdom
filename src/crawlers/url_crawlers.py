@@ -27,3 +27,9 @@ get_our_world_in_data_attributes = {
     'life_expectancy': {"type": "REAL", "label": "Life Expectancy"},
     'population_density': {"type": "REAL", "label": "Population Density"},
 }
+
+get_our_world_in_data_real_attributes = {}
+
+for key, value in zip(get_our_world_in_data_attributes.keys(), get_our_world_in_data_attributes.values()):
+   if value['type'] == "REAL":
+       get_our_world_in_data_real_attributes[key] = value

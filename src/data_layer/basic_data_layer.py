@@ -4,6 +4,7 @@ import pandas as pd
 from .util import resample_by_date_range, query_creator
 from scipy.stats.stats import pearsonr
 from utils.util import hashable_cache, data_bars_diverging
+from crawlers.url_crawlers import get_our_world_in_data_attributes, get_our_world_in_data_real_attributes
 
 @hashable_cache(lru_cache(maxsize=32))
 def get_filtered_countries(iso_code, attribute_conditions):
@@ -90,10 +91,28 @@ def compute_corr_two_attributes(attribute_1, attribute_2, start_date=None, end_d
     for country in unique_countries:
         data = df1[df1.location == country]
         corr = pearsonr(data[attribute_1], data[attribute_2])
-        corr_matrix.append([country, round(corr[0], 5)])
+        corr_matrix.append([country, round(corr[0], 6)])
     data_corr = pd.DataFrame(corr_matrix, columns=[
         'Country', 'Correlation'])
-    return data_corr
+    return data_corr.sort_values(by=['Correlation'], ascending=False)
+
+@hashable_cache(lru_cache(maxsize=32))
+def compute_corr_attributes(attribute, start_date=None, end_date=None, iso_code=None):
+    df1 = get_attribute(attribute, start_date, end_date, iso_code, None, False)
+    attributes = list(get_our_world_in_data_real_attributes.keys())
+    for attr in attributes:
+        if attr != attribute:
+            attr_label = get_our_world_in_data_real_attributes[attr]["label"]
+            df2 = get_attribute(attr, start_date, end_date, iso_code, None, False)
+            df1[attr_label] = df2[attr]
+    corr_matrix = df1.corr(method='pearson')[[attribute]]
+    corr_matrix = corr_matrix.dropna()
+    corr_matrix = corr_matrix.reset_index()
+    corr_matrix.rename(columns={'index': 'Attributes', attribute: 'Correlation'}, inplace=True)
+    corr_matrix = corr_matrix.sort_values(by=['Correlation'], ascending=False)
+    corr_matrix = corr_matrix[corr_matrix['Attributes'] != attribute]
+    corr_matrix['Correlation'] = corr_matrix['Correlation'].round(decimals = 6)
+    return corr_matrix
 
 
 def get_latest(df, attribute):
@@ -122,10 +141,18 @@ def get_aggregate(df, attribute, type):
     agg_data[attribute] = values
     return agg_data
 
-def create_table_bar_styles(attribute_1, attribute_2, start_date, end_date, iso_code):
+def create_table_bar_styles_multiple_countries(attribute_1, attribute_2, start_date, end_date, iso_code):
     correlation = compute_corr_two_attributes(
         attribute_1, attribute_2, start_date, end_date, iso_code)
     data = correlation.to_dict('records')
+    columns = [{"name": i, "id": i} for i in correlation.columns]
+    style = data_bars_diverging('Correlation')
+    return data, columns, style
+
+def create_table_bar_styles(attribute_1, start_date, end_date, iso_code):
+    correlation = compute_corr_attributes(
+        attribute_1, start_date, end_date, iso_code)
+    data = correlation.to_dict('records')  # type: ignore
     columns = [{"name": i, "id": i} for i in correlation.columns]
     style = data_bars_diverging('Correlation')
     return data, columns, style
