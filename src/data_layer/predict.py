@@ -4,6 +4,9 @@ from connection.db_connector import DBConnection
 from .util import query_creator
 from functools import lru_cache
 from utils.util import hashable_cache
+from sklearn.preprocessing import PolynomialFeatures
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import StandardScaler
 from crawlers.url_crawlers import get_our_world_in_data_real_attributes
 
 model_params = {
@@ -40,17 +43,28 @@ def get_prediction(model_type, target_attribute, iso_code, attribute, predict_da
     number_of_nans = y_shift.isnull().values.ravel().sum()
     y_shift_dropped = y_shift.dropna(axis=0)
     x_sort_dropped = x_sort.drop(x_sort.tail(number_of_nans).index)
-
+    
+    
     if model_type == "lasso":
         alpha = model_params["lasso"]["alpha"]
         max_iter = model_params["lasso"]["max_iter"]
         if params:
             alpha = params.get("alpha", alpha)
             max_iter = params.get("max_iter", max_iter)
-        model = Lasso(alpha=0.01)
+        steps_lasso = [
+            ('scalar', StandardScaler()),
+            ('poly', PolynomialFeatures(degree=2)),
+            ('model', Lasso(alpha=float(alpha), fit_intercept=True, max_iter=int(max_iter)))
+        ]
+        model = Pipeline(steps_lasso)
         model.fit(x_sort_dropped, y_shift_dropped[target_attribute])
     elif model_type == "ridge":
-        model = Ridge(alpha=0.01)
+        steps_ridge = [
+            ('scalar', StandardScaler()),
+            ('poly', PolynomialFeatures(degree=1)),
+            ('model', Ridge(alpha=0.01, fit_intercept=True))
+        ]
+        model = Pipeline(steps_ridge)
         model.fit(x_sort_dropped, y_shift_dropped[target_attribute])
     else:
         raise ValueError("Model type not supported")
@@ -60,4 +74,4 @@ def get_prediction(model_type, target_attribute, iso_code, attribute, predict_da
     # move date forward by 3 months for plotting
     y_shift = y_shift.shift(predict_days, freq='D')
 
-    return y_hat, y_shift
+    return abs(y_hat), y_shift

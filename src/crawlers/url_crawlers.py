@@ -7,6 +7,10 @@ def get_our_world_in_data():
     df = pd.read_csv(url, parse_dates=['date'])
     return df
 
+def get_mask_data():
+    url = '../data/covid_mask_data.csv'
+    df = pd.read_csv(url, parse_dates=['date'])
+    return df
 
 get_our_world_in_data_attributes = {
     'iso_code': {"type": 'TEXT', "label": 'ISO Code'},
@@ -26,6 +30,14 @@ get_our_world_in_data_attributes = {
     'extreme_poverty': {"type": "REAL", "label": "Extreme Poverty"},
     'life_expectancy': {"type": "REAL", "label": "Life Expectancy"},
     'population_density': {"type": "REAL", "label": "Population Density"},
+    'population': {"type": "REAL", "label": "Population"},
+    'human_development_index': {"type": "REAL", "label": "Human Development Index"},
+    'diabetes_prevalence': {"type": "REAL", "label": "Diabetes Prevalence"},
+    'cardiovasc_death_rate': {"type": "REAL", "label": "Cardiovasc Death Rate"},
+    'gdp_per_capita': {"type": "REAL", "label": "GDP Per Capita"},
+    'median_age': {"type": "REAL", "label": "Median Age"},
+    'total_boosters': {"type": "REAL", "label": "Total Boosters"}, 
+    'hosp_patients': {"type": "REAL", "label": "Hospital Patients"}
 }
 
 get_our_world_in_data_real_attributes = {}

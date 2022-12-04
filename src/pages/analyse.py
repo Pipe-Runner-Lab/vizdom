@@ -8,7 +8,7 @@ from components.layouts.page_layouts import three_splitter_v2
 from crawlers.url_crawlers import get_our_world_in_data_attributes, get_our_world_in_data_real_attributes
 from data_layer.basic_data_layer import get_list_of_countries, get_total_number_of_cases_by_date, get_attribute, get_filtered_countries, create_table_bar_styles_multiple_countries, create_table_bar_styles
 import dash_bootstrap_components as dbc
-import plotly.graph_objects as go
+from utils.util import normalize
 from utils.date_range import get_date_range
 from utils.expression_parser import parse
 from components.filter_input.filter_input import render_filter_input
@@ -165,7 +165,7 @@ layout = three_splitter_v2(
             dcc.Dropdown(options=[{
                 "value": attributes,
                 "label": attributes_info['label']
-            } for attributes, attributes_info in list_of_attributes],
+            } for attributes, attributes_info in list_of_real_attributes],
                 multi=True,
                 placeholder="Filter by attributes",
                 id="analyse-attribute-filter",
@@ -335,6 +335,7 @@ def update_all_graphs(iso_code, attribute_1, attribute_2, aggregation_type_1, ag
     column_data = None
     columns = None
     style = [{}]
+    
     if iso_code == "All":
         # country filter only checked if ISO Code is All
         filter_data = json.loads(filter_data)
@@ -345,7 +346,7 @@ def update_all_graphs(iso_code, attribute_1, attribute_2, aggregation_type_1, ag
         attribute_date_2 = get_attribute(attribute_2, start_date, end_date,
                                          iso_code, aggregation_type_2)
         attribute_date_1[attribute_2] = attribute_date_2[attribute_2]
-
+        
         column_data, columns, style = create_table_bar_styles_multiple_countries(
             attribute_1, attribute_2, start_date, end_date, iso_code)
         
@@ -359,8 +360,7 @@ def update_all_graphs(iso_code, attribute_1, attribute_2, aggregation_type_1, ag
             attribute_date_mean_2 = get_attribute(attribute_2, start_date, end_date,
                                          iso_code, 'mean')
             attribute_date_mean_1[attribute_2] = attribute_date_mean_2[attribute_2]
-            countries = attribute_date_1.groupby('location').first()
-            fig2 = render_country_lines(attribute_date_1, countries,
+            fig2 = render_country_lines(attribute_date_1,
                                         attribute_1, attribute_2, "date",
                                         "location")
             fig1 = render_scatter(attribute_date_mean_1, attribute_1, attribute_2, 'location', 'mean', 'mean')
@@ -375,14 +375,15 @@ def update_all_graphs(iso_code, attribute_1, attribute_2, aggregation_type_1, ag
         attribute_data_1[attribute_2] = attribute_data_2[attribute_2]
         column_data, columns, style = create_table_bar_styles(
             attribute_1, start_date, end_date, iso_code)
-        
         if aggregation_type_1 != 'none' and aggregation_type_2 != 'none':
+            
             fig1 = render_scatter(attribute_data_1,
-                                  attribute_1, attribute_2)
+                                  attribute_1, attribute_2, None, aggregation_type_1, aggregation_type_2)
             fig2 = render_bar_compare(attribute_data_1, attribute_1,
                                       attribute_2, "location")
         else:
-            fig1 = render_scatter(attribute_data_1,
+            attribute_data_1_norm = normalize(attribute_data_1)
+            fig1 = render_scatter(attribute_data_1_norm,
                                   attribute_1, attribute_2)
             fig2 = render_two_lines(attribute_data_1,
                                     attribute_1, attribute_2, "date")
