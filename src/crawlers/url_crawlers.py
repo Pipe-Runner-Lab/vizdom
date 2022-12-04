@@ -7,6 +7,10 @@ def get_our_world_in_data():
     df = pd.read_csv(url, parse_dates=['date'])
     return df
 
+def get_mask_data():
+    url = '../data/covid_mask_data.csv'
+    df = pd.read_csv(url, parse_dates=['date'])
+    return df
 
 get_our_world_in_data_attributes = {
     'iso_code': {"type": 'TEXT', "label": 'ISO Code'},

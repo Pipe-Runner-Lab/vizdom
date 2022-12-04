@@ -90,7 +90,11 @@ def compute_corr_two_attributes(attribute_1, attribute_2, start_date=None, end_d
     corr_matrix = []
     for country in unique_countries:
         data = df1[df1.location == country]
-        corr = pearsonr(data[attribute_1], data[attribute_2])
+        corr = []
+        if ((data[attribute_1] == data[attribute_1].iloc[0]).all()) or ((data[attribute_2] == data[attribute_2].iloc[0]).all()):
+            corr = [0,0]
+        else:
+            corr = pearsonr(data[attribute_1], data[attribute_2])
         corr_matrix.append([country, round(corr[0], 6)])
     data_corr = pd.DataFrame(corr_matrix, columns=[
         'Country', 'Correlation'])
@@ -105,8 +109,9 @@ def compute_corr_attributes(attribute, start_date=None, end_date=None, iso_code=
             attr_label = get_our_world_in_data_real_attributes[attr]["label"]
             df2 = get_attribute(attr, start_date, end_date, iso_code, None, False)
             df1[attr_label] = df2[attr]
+
     corr_matrix = df1.corr(method='pearson')[[attribute]]
-    corr_matrix = corr_matrix.dropna()
+    corr_matrix = corr_matrix.fillna(0)
     corr_matrix = corr_matrix.reset_index()
     corr_matrix.rename(columns={'index': 'Attributes', attribute: 'Correlation'}, inplace=True)
     corr_matrix = corr_matrix.sort_values(by=['Correlation'], ascending=False)

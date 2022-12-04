@@ -70,6 +70,9 @@ def fill_nans_by_interpolation(data):
     # Sort by date and then set date as index; needed for interpolation
     data = data.sort_values(by=["date"]).set_index("date")
     attributes = list(data.describe().columns)
+    country = data.location.unique()
+    iso_code = data.iso_code.unique()
+    continent = data.continent.unique()
     for attr in attributes:
         column_data = data[attr]
         if column_data.isnull().all():
@@ -79,11 +82,17 @@ def fill_nans_by_interpolation(data):
                 column_data.iloc[0] = column_data.loc[column_data.first_valid_index()]
             if pd.isna(column_data.iloc[-1]):
                 column_data.iloc[-1] = column_data.loc[column_data.last_valid_index()]
-
+         
         column_data_resampled = column_data.resample(
+            "1d").asfreq()
+        data_resampled = data.resample(
             "1d").asfreq()  # Resample to daily
         column_data_interpolated = column_data_resampled.interpolate(
             method='linear', order=1)  # Interpolation of the data
+        data_resampled[['continent']] = data_resampled[['continent']].fillna(f'{continent[0]}')
+        data_resampled[['iso_code']] = data_resampled[['iso_code']].fillna(f'{iso_code[0]}')
+        data_resampled[['location']] = data_resampled[['location']].fillna(f'{country[0]}')
         # save to overwrite the original data
-        data[attr] = column_data_interpolated
+        data_resampled[attr] = column_data_interpolated
+        data = data_resampled
     return data.reset_index()

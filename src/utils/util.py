@@ -1,4 +1,6 @@
 from collections import namedtuple
+from sklearn import preprocessing
+import pandas as pd
 import functools
 import json
 import six
@@ -102,3 +104,24 @@ def data_bars_diverging(column, color_above='rgb(187 247 208)', color_below='rgb
         styles.append(style)
 
     return styles
+
+def truncate_string(string):  
+    string = string[:11] + '...' if len(string) > 11 else string
+    return string
+
+def truncate_df_column(df, column):
+    for idx, row in enumerate(df[column]):
+        df[column][idx] = row[:11] + '...' if len(df[column][idx]) > 11 else df[column][idx]
+    return df
+
+def normalize(df):
+    data = df.copy()
+    unique_countries = data.location.unique() 
+    result = pd.DataFrame()
+    for country in unique_countries:
+        result = data[data.location == country]
+        for feature_name in result.describe().columns:
+            max_value = result[feature_name].max()
+            min_value = result[feature_name].min()
+            result[feature_name] = (result[feature_name] - min_value) / (max_value - min_value)
+    return result    
