@@ -9,15 +9,17 @@ The pipeline is as follows:
 """
 
 from connection.db_connector import DBConnection
-from crawlers.url_crawlers import get_our_world_in_data, get_our_world_in_data_attributes
+from crawlers.url_crawlers import get_mask_data, get_our_world_in_data, get_our_world_in_data_attributes
 from filters.base_filters import country_based_interpolation, keep_columns_by_name, drop_rows_with_OWID, drop_rows_with_occurrence_number
+from data_engine.base_engine import combine_data_with_mask
 
 db = DBConnection()
-
-raw_data = get_our_world_in_data()
-filtered_data = drop_rows_with_OWID(raw_data)
+raw_data_1 = get_our_world_in_data()
+raw_data_2 = get_mask_data()
+filtered_data = drop_rows_with_OWID(raw_data_1)
 filtered_data = drop_rows_with_occurrence_number(filtered_data, 1)
 interpolated_data = country_based_interpolation(filtered_data)
-remaining_data = keep_columns_by_name(interpolated_data, get_our_world_in_data_attributes.keys())
+combined_data = combine_data_with_mask(interpolated_data, raw_data_2)
+remaining_data = keep_columns_by_name(combined_data, get_our_world_in_data_attributes.keys())
 # skipping processing
 db.populate_with_data_frame('covid', remaining_data)
