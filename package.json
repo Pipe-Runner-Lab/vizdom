@@ -9,7 +9,7 @@
     "pipeline": "cd src && conda run --no-capture-output -n vizdom python -u ./pipeline.py",
     "freeze": "conda env export > environment.yml && pip3 freeze > requirements.txt",
     "setup": "conda env create -f ./environment.yml && pip3 install -r requirements.txt",
-    "deploy": "cd src && conda run --no-capture-output -n vizdom python -u ./app.py"
+    "deploy": "cd src && export ENV=PROD && conda run --no-capture-output -n vizdom python -u ./app.py"
   },
   "repository": {
     "type": "git",
