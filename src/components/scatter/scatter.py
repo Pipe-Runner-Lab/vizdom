@@ -2,11 +2,12 @@ import plotly.express as px
 from utils.util import truncate_df_column
 from crawlers.url_crawlers import get_our_world_in_data_attributes
 
-def render_scatter(df, y_column, x_column, color_column = None, aggregation_type_1 = None, aggregation_type_2 = None):
+
+def render_scatter(df, y_column, x_column, size_column=None, color_column=None, aggregation_type_1=None, aggregation_type_2=None):
     attr1_label = get_our_world_in_data_attributes[x_column]["label"]
     attr2_label = get_our_world_in_data_attributes[y_column]["label"]
     df = truncate_df_column(df, 'location')
-    fig = px.scatter(df, x_column, y_column, color_column)
+    fig = px.scatter(df, x_column, y_column, color_column, size=size_column)
     fig.update_layout(
         margin=dict(r=12, t=24, b=16),
         legend_title="",

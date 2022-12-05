@@ -17,18 +17,35 @@ from components.filter_input.filter_input import render_filter_input
 
 countries = get_list_of_countries()
 list_of_attributes = get_our_world_in_data_attributes.items()
-list_of_real_attributes = get_our_world_in_data_real_attributes.items() 
+list_of_real_attributes = get_our_world_in_data_real_attributes.items()
 # * Register route
 register_page(__name__, path="/analyse")
 
 layout = three_splitter_v2(
     main_1=[
-        html.Div(dcc.Loading(
-            dcc.Graph(figure={},
-                      id="analyse-main-graph-1",
-                      className="main-graph",
-                      style={"opacity": "0"})),
-                 className="card"),
+        html.Div(
+            [
+                html.Div(
+                    [
+                        dcc.Loading(
+                            dcc.Graph(figure={},
+                                      id="analyse-main-graph-1",
+                                      className="main-graph",
+                                      style={"opacity": "0"})
+                        )
+                    ],
+                    className="card"
+                ),
+                html.Button(
+                    html.I(className="fa-sharp fa-solid fa-exchange"),
+                    id='analyse-swap-button',
+                    className="swap-button",
+                    n_clicks=0
+                ),
+                dcc.Store(id='analyse-main-graph-swap', data=False),
+            ],
+            className="swap-container"
+        ),
         html.Div(
             dcc.Loading(dash_table.DataTable(id="correlation-table")),
             className="table-container card",
@@ -113,41 +130,83 @@ layout = three_splitter_v2(
                     ),
                 ],
                 className="attribute-selectors"),
-            html.Div([
-                html.Div("Secondary Attribute", className="sub-title"),
-                html.Div("Aggregation", className="sub-title"),
-            ],
-                className="attribute-selectors"),
-            html.Div([
-                dcc.Dropdown(options=[{
-                    "value": attributes,
-                    "label": attributes_info['label']
-                } for attributes, attributes_info in list_of_real_attributes],
-                    value="new_deaths",
-                    id="analyse-attribute2-dropdown",
-                    multi=False,
-                    clearable=False
-                ),
-                dcc.Dropdown(options=[{
-                    "value": "mean",
-                    "label": "Mean"
-                }, {
-                    "value": "sum",
-                    "label": "Sum"
-                }, {
-                    "value": "latest",
-                    "label": "Latest"
-                }, {
-                    "value": "none",
-                    "label": "None"
-                }],
-                    value="none",
-                    id="analyse-aggregation2-dropdown",
-                    multi=False,
-                    clearable=False
-                ),
-            ],
-                className="attribute-selectors")
+            html.Div(
+                [
+                    html.Div("Secondary Attribute", className="sub-title"),
+                    html.Div("Aggregation", className="sub-title"),
+                ],
+                className="attribute-selectors"
+            ),
+            html.Div(
+                [
+                    dcc.Dropdown(options=[{
+                        "value": attributes,
+                        "label": attributes_info['label']
+                    } for attributes, attributes_info in list_of_real_attributes],
+                        value="new_deaths",
+                        id="analyse-attribute2-dropdown",
+                        multi=False,
+                        clearable=False
+                    ),
+                    dcc.Dropdown(
+                        options=[{
+                            "value": "mean",
+                            "label": "Mean"
+                        }, {
+                            "value": "sum",
+                            "label": "Sum"
+                        }, {
+                            "value": "latest",
+                            "label": "Latest"
+                        }, {
+                            "value": "none",
+                            "label": "None"
+                        }],
+                        value="none",
+                        id="analyse-aggregation2-dropdown",
+                        multi=False,
+                        clearable=False
+                    ),
+                ],
+                className="attribute-selectors"
+            ),
+
+            html.Div(
+                [
+                    html.Div("Tertiary Attribute", className="sub-title"),
+                    html.Div("Aggregation", className="sub-title"),
+                ],
+                className="attribute-selectors"
+            ),
+            html.Div(
+                [
+                    dcc.Dropdown(options=[{
+                        "value": attributes,
+                        "label": attributes_info['label']
+                    } for attributes, attributes_info in list_of_real_attributes],
+                        id="analyse-attribute3-dropdown",
+                        multi=False,
+                        clearable=True
+                    ),
+                    dcc.Dropdown(
+                        options=[{
+                            "value": "mean",
+                            "label": "Mean"
+                        }, {
+                            "value": "sum",
+                            "label": "Sum"
+                        }, {
+                            "value": "latest",
+                            "label": "Latest"
+                        }],
+                        value="mean",
+                        id="analyse-aggregation3-dropdown",
+                        multi=False,
+                        clearable=False
+                    ),
+                ],
+                className="attribute-selectors"
+            )
         ],
             className="action-wrapper"),
         html.Div([
@@ -191,6 +250,19 @@ layout = three_splitter_v2(
 # ---------------------------------------------------------------------------- #
 #                               FILTER CALLBACKS                               #
 # ---------------------------------------------------------------------------- #
+
+
+@callback(
+    Output("analyse-main-graph-swap", "data"),
+    Input("analyse-main-graph-swap", "data"),
+    Input("analyse-swap-button", "n_clicks"),
+    prevent_initial_call=True
+)
+def toggle_main_graph(data, n_clicks):
+    if ctx.triggered_id == 'analyse-swap-button':
+        return not data
+    else:
+        raise PreventUpdate
 
 
 @callback(Output("analyse-filter-panel", "style"),
@@ -320,79 +392,62 @@ def aggregation_logic_enforcer(aggregation_type_1, aggregation_type_2):
     Input("analyse-country-dropdown", "value"),
     Input("analyse-attribute1-dropdown", "value"),
     Input("analyse-attribute2-dropdown", "value"),
+    Input("analyse-attribute3-dropdown", "value"),
     Input("analyse-aggregation1-dropdown", "value"),
     Input("analyse-aggregation2-dropdown", "value"),
+    Input("analyse-aggregation3-dropdown", "value"),
     Input("analyse-bottom-graph", "relayoutData"),
     Input("analyse-filter-data", "data"),
+    Input("analyse-main-graph-swap", "data")
 )
-def update_all_graphs(iso_code, attribute_1, attribute_2, aggregation_type_1, aggregation_type_2, relayoutData, filter_data):
+def update_all_graphs(
+    iso_code, attribute_1, attribute_2, attribute_3, aggregation_type_1, aggregation_type_2, aggregation_type_3, relayoutData, filter_data, should_swap
+):
     if aggregation_type_1 == 'none' and aggregation_type_2 != 'none':
         raise PreventUpdate
     elif aggregation_type_1 != 'none' and aggregation_type_2 == 'none':
         raise PreventUpdate
-    
+
     start_date, end_date = get_date_range(relayoutData)
     column_data = None
     columns = None
     style = [{}]
-    
+
     if iso_code == "All":
         # country filter only checked if ISO Code is All
         filter_data = json.loads(filter_data)
         iso_code = filter_data.get("countries", None)
-        attribute_data_1 = get_attribute(attribute_1, start_date, end_date,
-                                         iso_code, aggregation_type_1)
-        attribute_data_2 = get_attribute(attribute_2, start_date, end_date,
-                                         iso_code, aggregation_type_2)
-        attribute_data_1[attribute_2] = attribute_data_2[attribute_2]
-        
+
+        # Fetch
+        attribute_date_1 = get_attribute(attribute_1, start_date, end_date,
+                                         iso_code, aggregation_type_1 if aggregation_type_1 != 'none' else 'mean')
+        attribute_date_2 = get_attribute(attribute_2, start_date, end_date,
+                                         iso_code, aggregation_type_2 if aggregation_type_2 != 'none' else 'mean')
+        attribute_date_1[attribute_2] = attribute_date_2[attribute_2]
+        if attribute_3 is not None:
+            attribute_date_3 = get_attribute(attribute_3, start_date, end_date,
+                                             iso_code, aggregation_type_3)
+            attribute_date_1[attribute_3] = attribute_date_3[attribute_3]
+
         column_data, columns, style = create_table_bar_styles_multiple_countries(
             attribute_1, attribute_2, start_date, end_date, iso_code)
-        if len(iso_code) > 1:
-            if aggregation_type_1 != 'none' and aggregation_type_2 != 'none':
-                fig2 = render_bar_compare(attribute_data_1, attribute_1,
+
+        fig1 = render_scatter(attribute_date_1, attribute_1, attribute_2, attribute_3, 'location',
+                              aggregation_type_1 if aggregation_type_1 != 'none' else 'mean', 
+                              aggregation_type_2 if aggregation_type_2 != 'none' else 'mean')
+
+        if aggregation_type_1 != 'none' and aggregation_type_2 != 'none':
+            fig2 = render_bar_compare(attribute_date_1, attribute_1,
                                       attribute_2, "location")
-                fig1 = render_scatter(attribute_data_1, attribute_1, attribute_2, 'location', aggregation_type_1, aggregation_type_2)
-            else:
-                attribute_date_mean_1 = get_attribute(attribute_1, start_date, end_date,
-                                         iso_code, 'mean')
-                attribute_date_mean_2 = get_attribute(attribute_2, start_date, end_date,
-                                         iso_code, 'mean')
-                attribute_date_mean_1[attribute_2] = attribute_date_mean_2[attribute_2]
-                fig2 = render_country_lines(attribute_data_1,
+        else:
+            attribute_date_1 = get_attribute(attribute_1, start_date, end_date,
+                                         iso_code)
+            attribute_date_2 = get_attribute(attribute_2, start_date, end_date,
+                                         iso_code)
+            attribute_date_1[attribute_2] = attribute_date_2[attribute_2]
+            fig2 = render_country_lines(attribute_date_1,
                                         attribute_1, attribute_2, "date",
                                         "location")
-                fig1 = render_scatter(attribute_date_mean_1, attribute_1, attribute_2, 'location', 'mean', 'mean')
-        else:
-            column_data, columns, style = create_table_bar_styles(
-                        attribute_1, start_date, end_date, iso_code)
-            if aggregation_type_1 == 'none' and aggregation_type_2 == 'none':
-                if ((attribute_data_1[attribute_1] == attribute_data_1[attribute_1][0]).all()) or ((attribute_data_1[attribute_2] == attribute_data_1[attribute_2][0]).all()):
-                    attribute_date_mean = None
-                    if ((attribute_data_1[attribute_1] == attribute_data_1[attribute_1][0]).all()):
-                        attribute_date_mean = get_attribute(attribute_2, start_date, end_date,
-                                                iso_code, 'mean')
-                        attribute_date_mean[attribute_1] = attribute_data_1[attribute_1][0]
-                    
-                    if ((attribute_data_1[attribute_2] == attribute_data_1[attribute_2][0]).all()):
-                        attribute_date_mean = get_attribute(attribute_1, start_date, end_date,
-                                            iso_code, 'mean')
-                        attribute_date_mean[attribute_2] = attribute_data_1[attribute_2][0]
-                
-                    fig1 = render_scatter(attribute_date_mean,
-                                  attribute_1, attribute_2, None, 'mean', 'mean')
-                    fig2 = render_two_lines(attribute_data_1,
-                                    attribute_1, attribute_2, "date")
-                else:
-                    attribute_data_1_norm = normalize(attribute_data_1)
-                    fig1 = render_scatter(attribute_data_1_norm,
-                                        attribute_1, attribute_2)
-                    fig2 = render_two_lines(attribute_data_1,
-                                        attribute_1, attribute_2, "date")
-            else:
-                fig2 = render_bar_compare(attribute_data_1, attribute_1,
-                                      attribute_2, "location")
-                fig1 = render_scatter(attribute_data_1, attribute_1, attribute_2, 'location', aggregation_type_1, aggregation_type_2)
     else:
         attribute_data_1 = get_attribute(attribute_1, start_date, end_date,
                                          iso_code, aggregation_type_1)
@@ -402,34 +457,21 @@ def update_all_graphs(iso_code, attribute_1, attribute_2, aggregation_type_1, ag
         column_data, columns, style = create_table_bar_styles(
             attribute_1, start_date, end_date, iso_code)
         if aggregation_type_1 != 'none' and aggregation_type_2 != 'none':
-            
+
             fig1 = render_scatter(attribute_data_1,
-                                  attribute_1, attribute_2, None, aggregation_type_1, aggregation_type_2)
+                                  attribute_1, attribute_2, None, None, aggregation_type_1, aggregation_type_2)
             fig2 = render_bar_compare(attribute_data_1, attribute_1,
                                       attribute_2, "location")
         else:
-            if ((attribute_data_1[attribute_1] == attribute_data_1[attribute_1][0]).all()) or ((attribute_data_1[attribute_2] == attribute_data_1[attribute_2][0]).all()):
-                attribute_date_mean = None
-                if ((attribute_data_1[attribute_1] == attribute_data_1[attribute_1][0]).all()):
-                    attribute_date_mean = get_attribute(attribute_2, start_date, end_date,
-                                                iso_code, 'mean')
-                    attribute_date_mean[attribute_1] = attribute_data_1[attribute_1][0]
-                    
-                if ((attribute_data_1[attribute_2] == attribute_data_1[attribute_2][0]).all()):
-                    attribute_date_mean = get_attribute(attribute_1, start_date, end_date,
-                                            iso_code, 'mean')
-                    attribute_date_mean[attribute_2] = attribute_data_1[attribute_2][0]
-                
-                fig1 = render_scatter(attribute_date_mean,
-                                  attribute_1, attribute_2, None, 'mean', 'mean')
-                fig2 = render_two_lines(attribute_data_1,
+            attribute_data_1_norm = normalize(attribute_data_1)
+            fig1 = render_scatter(attribute_data_1_norm,
+                                  attribute_1, attribute_2)
+            fig2 = render_two_lines(attribute_data_1,
                                     attribute_1, attribute_2, "date")
-            else:
-                attribute_data_1_norm = normalize(attribute_data_1)
-                fig1 = render_scatter(attribute_data_1_norm,
-                                        attribute_1, attribute_2)
-                fig2 = render_two_lines(attribute_data_1,
-                                        attribute_1, attribute_2, "date")
+
+    if should_swap:
+        fig1, fig2 = fig2, fig1
+
     return fig1, fig2, {
         "opacity": "1"
     }, {
