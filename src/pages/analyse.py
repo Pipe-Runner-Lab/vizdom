@@ -340,33 +340,59 @@ def update_all_graphs(iso_code, attribute_1, attribute_2, aggregation_type_1, ag
         # country filter only checked if ISO Code is All
         filter_data = json.loads(filter_data)
         iso_code = filter_data.get("countries", None)
-
-        attribute_date_1 = get_attribute(attribute_1, start_date, end_date,
+        attribute_data_1 = get_attribute(attribute_1, start_date, end_date,
                                          iso_code, aggregation_type_1)
-        attribute_date_2 = get_attribute(attribute_2, start_date, end_date,
+        attribute_data_2 = get_attribute(attribute_2, start_date, end_date,
                                          iso_code, aggregation_type_2)
-        attribute_date_1[attribute_2] = attribute_date_2[attribute_2]
+        attribute_data_1[attribute_2] = attribute_data_2[attribute_2]
         
         column_data, columns, style = create_table_bar_styles_multiple_countries(
             attribute_1, attribute_2, start_date, end_date, iso_code)
-        
-        if aggregation_type_1 != 'none' and aggregation_type_2 != 'none':
-            fig2 = render_bar_compare(attribute_date_1, attribute_1,
+        if len(iso_code) > 1:
+            if aggregation_type_1 != 'none' and aggregation_type_2 != 'none':
+                fig2 = render_bar_compare(attribute_data_1, attribute_1,
                                       attribute_2, "location")
-            fig1 = render_scatter(attribute_date_1, attribute_1, attribute_2, 'location', aggregation_type_1, aggregation_type_2)
-        else:
-            attribute_date_mean_1 = get_attribute(attribute_1, start_date, end_date,
+                fig1 = render_scatter(attribute_data_1, attribute_1, attribute_2, 'location', aggregation_type_1, aggregation_type_2)
+            else:
+                attribute_date_mean_1 = get_attribute(attribute_1, start_date, end_date,
                                          iso_code, 'mean')
-            attribute_date_mean_2 = get_attribute(attribute_2, start_date, end_date,
+                attribute_date_mean_2 = get_attribute(attribute_2, start_date, end_date,
                                          iso_code, 'mean')
-            attribute_date_mean_1[attribute_2] = attribute_date_mean_2[attribute_2]
-            fig2 = render_country_lines(attribute_date_1,
+                attribute_date_mean_1[attribute_2] = attribute_date_mean_2[attribute_2]
+                fig2 = render_country_lines(attribute_data_1,
                                         attribute_1, attribute_2, "date",
                                         "location")
-            fig1 = render_scatter(attribute_date_mean_1, attribute_1, attribute_2, 'location', 'mean', 'mean')
-            fig1.update_layout(
-                margin=dict(r=12, t=24, b=16),
-            )
+                fig1 = render_scatter(attribute_date_mean_1, attribute_1, attribute_2, 'location', 'mean', 'mean')
+        else:
+            column_data, columns, style = create_table_bar_styles(
+                        attribute_1, start_date, end_date, iso_code)
+            if aggregation_type_1 == 'none' and aggregation_type_2 == 'none':
+                if ((attribute_data_1[attribute_1] == attribute_data_1[attribute_1][0]).all()) or ((attribute_data_1[attribute_2] == attribute_data_1[attribute_2][0]).all()):
+                    attribute_date_mean = None
+                    if ((attribute_data_1[attribute_1] == attribute_data_1[attribute_1][0]).all()):
+                        attribute_date_mean = get_attribute(attribute_2, start_date, end_date,
+                                                iso_code, 'mean')
+                        attribute_date_mean[attribute_1] = attribute_data_1[attribute_1][0]
+                    
+                    if ((attribute_data_1[attribute_2] == attribute_data_1[attribute_2][0]).all()):
+                        attribute_date_mean = get_attribute(attribute_1, start_date, end_date,
+                                            iso_code, 'mean')
+                        attribute_date_mean[attribute_2] = attribute_data_1[attribute_2][0]
+                
+                    fig1 = render_scatter(attribute_date_mean,
+                                  attribute_1, attribute_2, None, 'mean', 'mean')
+                    fig2 = render_two_lines(attribute_data_1,
+                                    attribute_1, attribute_2, "date")
+                else:
+                    attribute_data_1_norm = normalize(attribute_data_1)
+                    fig1 = render_scatter(attribute_data_1_norm,
+                                        attribute_1, attribute_2)
+                    fig2 = render_two_lines(attribute_data_1,
+                                        attribute_1, attribute_2, "date")
+            else:
+                fig2 = render_bar_compare(attribute_data_1, attribute_1,
+                                      attribute_2, "location")
+                fig1 = render_scatter(attribute_data_1, attribute_1, attribute_2, 'location', aggregation_type_1, aggregation_type_2)
     else:
         attribute_data_1 = get_attribute(attribute_1, start_date, end_date,
                                          iso_code, aggregation_type_1)
@@ -382,11 +408,28 @@ def update_all_graphs(iso_code, attribute_1, attribute_2, aggregation_type_1, ag
             fig2 = render_bar_compare(attribute_data_1, attribute_1,
                                       attribute_2, "location")
         else:
-            attribute_data_1_norm = normalize(attribute_data_1)
-            fig1 = render_scatter(attribute_data_1_norm,
-                                  attribute_1, attribute_2)
-            fig2 = render_two_lines(attribute_data_1,
+            if ((attribute_data_1[attribute_1] == attribute_data_1[attribute_1][0]).all()) or ((attribute_data_1[attribute_2] == attribute_data_1[attribute_2][0]).all()):
+                attribute_date_mean = None
+                if ((attribute_data_1[attribute_1] == attribute_data_1[attribute_1][0]).all()):
+                    attribute_date_mean = get_attribute(attribute_2, start_date, end_date,
+                                                iso_code, 'mean')
+                    attribute_date_mean[attribute_1] = attribute_data_1[attribute_1][0]
+                    
+                if ((attribute_data_1[attribute_2] == attribute_data_1[attribute_2][0]).all()):
+                    attribute_date_mean = get_attribute(attribute_1, start_date, end_date,
+                                            iso_code, 'mean')
+                    attribute_date_mean[attribute_2] = attribute_data_1[attribute_2][0]
+                
+                fig1 = render_scatter(attribute_date_mean,
+                                  attribute_1, attribute_2, None, 'mean', 'mean')
+                fig2 = render_two_lines(attribute_data_1,
                                     attribute_1, attribute_2, "date")
+            else:
+                attribute_data_1_norm = normalize(attribute_data_1)
+                fig1 = render_scatter(attribute_data_1_norm,
+                                        attribute_1, attribute_2)
+                fig2 = render_two_lines(attribute_data_1,
+                                        attribute_1, attribute_2, "date")
     return fig1, fig2, {
         "opacity": "1"
     }, {
