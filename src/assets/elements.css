@@ -55,6 +55,30 @@
   align-items: center;
 }
 
+.swap-container {
+  position: relative;
+  display: flex;
+  overflow: unset !important;
+  z-index: 1;
+}
+
+.swap-container > .card {
+  flex: 1;
+}
+
+.swap-button {
+  position: absolute;
+  right: 0px;
+  top: 50%;
+  transform: translateY(-50%) translateX(50%);
+  border: 1px solid #65647C;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  box-shadow: var(--shadow-elevation-medium);
+  background: #fff;
+}
+
 .card > div {
   height: 100%;
   width: 100%;
