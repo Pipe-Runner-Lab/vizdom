@@ -68,6 +68,9 @@
 
 .swap-button {
   position: absolute;
+  display: flex;
+  justify-content: center;
+  align-items: center;
   right: 0px;
   top: 50%;
   transform: translateY(-50%) translateX(50%);
