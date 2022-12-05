@@ -1,6 +1,13 @@
 from dash import Dash, html, page_container
 import dash_bootstrap_components as dbc
 import os
+import warnings
+
+# suppress pandas copy warning
+def warn(*args, **kwargs):
+    pass
+import warnings
+warnings.warn = warn
 
 app = Dash(__name__, use_pages=True,
            external_stylesheets=[
