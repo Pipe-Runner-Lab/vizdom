@@ -37,7 +37,10 @@ get_our_world_in_data_attributes = {
     'gdp_per_capita': {"type": "REAL", "label": "GDP Per Capita"},
     'median_age': {"type": "REAL", "label": "Median Age"},
     'total_boosters': {"type": "REAL", "label": "Total Boosters"}, 
-    'hosp_patients': {"type": "REAL", "label": "Hospital Patients"}
+    'hosp_patients': {"type": "REAL", "label": "Hospital Patients"},
+    'stringency_index': {"type": "REAL", "label": "Stringency Index"},
+    'mask_use_obs': {"type": "REAL", "label": "Mask Use Observed"},
+    'mask_use_mean': {"type": "REAL", "label": "Mask Use Mean"}
 }
 
 get_our_world_in_data_real_attributes = {}
