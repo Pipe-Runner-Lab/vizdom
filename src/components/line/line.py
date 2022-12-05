@@ -33,6 +33,8 @@ def render_line(data, x_column, y_column, color_column=None):
             ),
         )
     )
+    fig.update_xaxes(showspikes=True, spikecolor="green", spikesnap="cursor", spikemode="across", spikethickness=1)
+    fig.update_yaxes(showspikes=True, spikecolor="green", spikethickness=1)
     fig.update_xaxes(title_text=f"{x_label}")
     fig.update_yaxes(title_text=f"{y_label}")
     return fig
@@ -64,6 +66,8 @@ def render_prediction_line(data, original_col, data_shifted=None, prediction=Non
             ),
         )
     )
+    fig.update_xaxes(showspikes=True, spikecolor="green", spikesnap="cursor", spikemode="across", spikethickness=1)
+    fig.update_yaxes(showspikes=True, spikecolor="green", spikethickness=1)
     return fig
 
 
@@ -95,7 +99,7 @@ def render_country_lines(data, y_column_1, y_column_2, x_column, country, color_
             legendgroup=f"group{idx}",  
             legendgrouptitle_text=f"{label_truncated}",
             mode="lines",
-            opacity=0.3,
+            opacity=0.5,
             line={'dash': 'solid', 'color': color},
             name=f"{attr2_label_truncated}"),
             secondary_y=True)
@@ -108,6 +112,8 @@ def render_country_lines(data, y_column_1, y_column_2, x_column, country, color_
             ),
         )
     )
+    fig.update_xaxes(showspikes=True, spikecolor="green", spikesnap="cursor", spikemode="across", spikethickness=1)
+    fig.update_yaxes(showspikes=True, spikecolor="green", spikethickness=1)
     fig.update_xaxes(title_text=f"{date_label}")
     fig.update_yaxes(title_text=f"{attr1_label}", secondary_y=False)
     fig.update_yaxes(title_text=f"{attr2_label}", secondary_y=True)
@@ -143,6 +149,8 @@ def render_two_lines(df, y_column_1, y_column_2, x_column):
         )
     )
     fig.update_traces(showlegend=True)
+    fig.update_xaxes(showspikes=True, spikecolor="green", spikesnap="cursor", spikemode="across", spikethickness=1)
+    fig.update_yaxes(showspikes=True, spikecolor="green", spikethickness=1)
     fig.update_xaxes(title_text=f"{date_label}")
     fig.update_yaxes(title_text=f"{attr1_label}", secondary_y=False)
     fig.update_yaxes(title_text=f"{attr2_label}", secondary_y=True)

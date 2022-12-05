@@ -10,7 +10,16 @@ def get_our_world_in_data():
 def get_mask_data():
     url = '../data/covid_mask_data.csv'
     df = pd.read_csv(url, parse_dates=['date'])
+    df = df.rename({'location_name': 'location', 'CountryCode': 'iso_code'}, axis=1)
+    df = df.drop(columns=['location_id'])
     return df
+
+def get_expected_years_of_school_data():
+    url = '../data/covid_data.csv'
+    df = pd.read_csv(url)
+    df = df.rename({'country': 'location'}, axis=1)
+    df = df.drop(columns=['income_group', 'Unnamed: 0', 'population', 'total_tests', 'total_cases', 'total_deaths', 'total_recovered'])
+    return df 
 
 get_our_world_in_data_attributes = {
     'iso_code': {"type": 'TEXT', "label": 'ISO Code'},
@@ -34,13 +43,13 @@ get_our_world_in_data_attributes = {
     'human_development_index': {"type": "REAL", "label": "Human Development Index"},
     'diabetes_prevalence': {"type": "REAL", "label": "Diabetes Prevalence"},
     'cardiovasc_death_rate': {"type": "REAL", "label": "Cardiovasc Death Rate"},
-    'gdp_per_capita': {"type": "REAL", "label": "GDP Per Capita"},
+    'gdp_per_capita': {"type": "REAL", "label": "GDP per Capita"},
     'median_age': {"type": "REAL", "label": "Median Age"},
     'total_boosters': {"type": "REAL", "label": "Total Boosters"}, 
     'hosp_patients': {"type": "REAL", "label": "Hospital Patients"},
     'stringency_index': {"type": "REAL", "label": "Stringency Index"},
-    'mask_use_obs': {"type": "REAL", "label": "Mask Use Observed"},
-    'mask_use_mean': {"type": "REAL", "label": "Mask Use Mean"}
+    'mask_use_mean': {"type": "REAL", "label": "Mask Use Mean"},
+    'expected_years_of_school': {"type": "REAL", "label": "Expected Years of School"}
 }
 
 get_our_world_in_data_real_attributes = {}
