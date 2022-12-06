@@ -395,6 +395,8 @@ def update_filter(n_clicks, filter_type, countries, attribute, filter_expression
 
         countries, group_data = get_simple_filtered_countries(continents, group=group, selected_group=selected_group, should_group=should_group)
 
+        print(group_data)
+
         success_message = "Found " + str(len(countries)) + " countries" if len(
             countries) > 0 else "No countries found, showing all countries"
         success_block = dbc.Alert(
@@ -426,7 +428,6 @@ def update_filter(n_clicks, filter_type, countries, attribute, filter_expression
             countries) > 0 else "No countries found, showing all countries"
         success_block = dbc.Alert(
             success_message, color="success", class_name="alert")
-
         return json.dumps({"countries": countries}), error_block, success_block
 
 

@@ -90,8 +90,14 @@ def get_simple_filtered_countries(
                     )
                 curr_quantile += quantile
 
+            temp_group = {
+                group_title: {},
+            }
             for picked_group in selected_group:
-                countries += group[group_title][picked_group]
+                temp_group[group_title][picked_group] = group[group_title][picked_group]
+                countries += temp_group[group_title][picked_group]
+
+            group = temp_group
         else:
             raise Exception("Not implemented")
 
@@ -234,28 +240,23 @@ def get_aggregate(df, attribute, type, group_column=None):
 
 
 def get_aggregate_grouped(df, attribute, type, group_data):
-
     group_column = list(group_data.keys())[0]
-
-    # if group_column in list(quartiles.keys()):
-    #     group_column = quartiles[group_column]["column"]
-
     grouped_data = pd.DataFrame(columns=[group_column, attribute])
     
     for group, countries in group_data[group_column].items():
         df = df[df.iso_code.isin(countries)]
-        print(countries)
         if type == "mean":
             agg_value = df[attribute].mean()
         elif type == "sum":
             agg_value = df[attribute].sum()
+        elif type == "latest":
+            # TODO: Implement latest
+            raise Exception("Invalid aggregation type")
         else:
             raise Exception("Invalid aggregation type")
-        # print(group_column, group, attribute, agg_value)
         grouped_data = pd.concat(
             [grouped_data, pd.DataFrame({group_column: [group], attribute: [agg_value]})], ignore_index=True
         )
-    print(grouped_data)
     return grouped_data
 
 
