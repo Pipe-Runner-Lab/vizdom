@@ -53,19 +53,17 @@ def combine_data_with_mask(data, mask, attribute):
         combined_data = pd.concat([combined_data, data_covid])
     return combined_data.reset_index()
 
-def combine_data_with_expected_years_of_school(data, school):
+def combine_data_with_school(data, school):
     combined_data = pd.DataFrame()
     unique_countries = data.location.unique()
-
     for country in unique_countries: 
         data_covid = data[data.location == country]
         data_school = school[school.location == country]
         if data_school.empty:
-            value = 0
+            school_years = 0
         else:
-            value = data_school[data_school.columns[1]].values[0]
-    
-        data_covid[data_school.columns[1]] = value
+            school_years = data_school[data_school.columns[1]].values[0]
+        data_covid[data_school.columns[1]] = school_years
         combined_data = pd.concat([combined_data, pd.DataFrame(data_covid)]) 
     return combined_data 
 
