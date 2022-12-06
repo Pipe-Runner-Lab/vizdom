@@ -14,7 +14,7 @@ def get_mask_data():
     df = df.drop(columns=['location_id'])
     return df
 
-def get_expected_years_of_school_data():
+def get_school_data():
     url = '../data/covid_data.csv'
     df = pd.read_csv(url)
     df = df.rename({'country': 'location'}, axis=1)
@@ -27,16 +27,22 @@ get_our_world_in_data_attributes = {
     'location': {"type": "TEXT", "label": "Location"},
     'date': {"type": "TEXT", "label": "Date"},
     'new_cases': {"type": "REAL", "label": "New Cases"},
+    'new_cases_per_million' : {"type": "REAL", "label": "New Cases/Million"},
     'total_cases': {"type": "REAL", "label": "Total Cases"},
+    'total_cases_per_million': {"type": "REAL", "label": "Total Cases/Million"},
     'new_deaths': {"type": "REAL", "label": "New Deaths"},
+    'new_deaths_per_million': {"type": "REAL", "label": "New Deaths/Million"},
     'total_deaths': {"type": "REAL", "label": "Total Deaths"},
+    'total_deaths_per_million' : {"type": "REAL", "label":" Total Deaths/Million"},
     'new_vaccinations': {"type": "REAL", "label": "New Vaccinations"},
     'total_vaccinations': {"type": "REAL", "label": "Total Vaccinations"},
+    'total_vaccinations_per_hundred' : {"type": "REAL", "label": "Total Vaccinations/Hundred"},
     'people_vaccinated': {"type": "REAL", "label": "People Vaccinated"},
+    'people_vaccinated_per_hundred' : {"type": "REAL", "label": "People Vaccinated/Hundred"},
     'people_fully_vaccinated': {"type": "REAL", "label": "People Fully Vaccinated"},
+    'people_fully_vaccinated_per_hundred' : {"type": "REAL", "label": "People Fully Vaccinated/Hundred"},
     'female_smokers': {"type": "REAL", "label": "Female Smokers"},
     'male_smokers': {"type": "REAL", "label": "Male Smokers"},
-    'extreme_poverty': {"type": "REAL", "label": "Extreme Poverty"},
     'life_expectancy': {"type": "REAL", "label": "Life Expectancy"},
     'population_density': {"type": "REAL", "label": "Population Density"},
     'population': {"type": "REAL", "label": "Population"},
@@ -47,6 +53,7 @@ get_our_world_in_data_attributes = {
     'median_age': {"type": "REAL", "label": "Median Age"},
     'total_boosters': {"type": "REAL", "label": "Total Boosters"}, 
     'hosp_patients': {"type": "REAL", "label": "Hospital Patients"},
+    'hosp_patients_per_million' : {"type": "REAL", "label": "Hospital Patients/Million"},
     'stringency_index': {"type": "REAL", "label": "Stringency Index"},
     'mask_use_mean': {"type": "REAL", "label": "Mask Use Mean"},
     'expected_years_of_school': {"type": "REAL", "label": "Expected Years of School"}
