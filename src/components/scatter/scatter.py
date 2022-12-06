@@ -4,9 +4,7 @@ from crawlers.url_crawlers import get_our_world_in_data_attributes
 
 
 def render_scatter(df, y_column, x_column, size_column=None, color_column=None, aggregation_type_1=None, aggregation_type_2=None):
-    # attr1_label = get_our_world_in_data_attributes[x_column]["label"]
-    print(df, y_column, x_column, size_column, color_column)
-    x_label = x_column
+    attr1_label = get_our_world_in_data_attributes[x_column]["label"]
     attr2_label = get_our_world_in_data_attributes[y_column]["label"]
     if color_column:
         df = truncate_df_column(df, color_column)
@@ -22,9 +20,9 @@ def render_scatter(df, y_column, x_column, size_column=None, color_column=None, 
         )
     )
     if aggregation_type_1 == None and aggregation_type_2 == None:
-        fig.update_xaxes(title_text=f"{x_label}")
+        fig.update_xaxes(title_text=f"{attr1_label}")
         fig.update_yaxes(title_text=f"{attr2_label}")
     else:
-        fig.update_xaxes(title_text=f"{x_label} ({aggregation_type_1})")
+        fig.update_xaxes(title_text=f"{attr1_label} ({aggregation_type_1})")
         fig.update_yaxes(title_text=f"{attr2_label} ({aggregation_type_2})")
     return fig

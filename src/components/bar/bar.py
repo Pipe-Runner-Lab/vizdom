@@ -11,9 +11,11 @@ def render_bar(df, x_column, y_column, color_column=None):
                     y_column: get_our_world_in_data_attributes[y_column]["label"]})
     return fig
 
-def render_bar_compare(df, y_column_1, y_column_2, x_column, color_column=None):
-    # x_label = get_our_world_in_data_attributes[x_column]["label"]
-    x_label = x_column
+def render_bar_compare(df, y_column_1, y_column_2, x_column):
+    try:
+        x_label = get_our_world_in_data_attributes[x_column]["label"]
+    except:
+        x_label = x_column
     attr1_label = get_our_world_in_data_attributes[y_column_1]["label"]
     attr2_label = get_our_world_in_data_attributes[y_column_2]["label"]
     attr1_label_truncated = truncate_string(attr1_label)
