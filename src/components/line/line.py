@@ -7,7 +7,7 @@ from plotly.subplots import make_subplots
 from crawlers.url_crawlers import get_our_world_in_data_attributes
 
 
-def render_line(data, x_column, y_column, color_column=None):
+def render_line(data, x_column, y_column, color_column=None, should_show_date_range=False):
     fig = go.Figure()
     x_label = get_our_world_in_data_attributes[x_column]["label"]
     y_label = get_our_world_in_data_attributes[y_column]["label"]
@@ -23,8 +23,13 @@ def render_line(data, x_column, y_column, color_column=None):
             line={'dash': 'solid', 'color': color},
             name=f"{label_truncated}")
             )
+
+    title = f'Selected Date: {data[x_column].min().split(" ")[0]} to {data[x_column].max().split(" ")[0]}' if should_show_date_range else None
     fig.update_layout(
-        margin=dict(r=12, t=24, b=16),
+        title={
+            'text': title
+        },
+        margin=dict(r=12, t=(64 if title else 24), b=16),
         legend_title="",
         legend=dict(
             font=dict(
