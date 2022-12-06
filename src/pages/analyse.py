@@ -519,10 +519,15 @@ def update_all_graphs(
         group_data = filter_data.get("group", None)
         # Fetch
         attribute_date_1 = get_attribute(attribute_1, start_date, end_date,
-                                         iso_code, aggregation_type_1 if aggregation_type_1 != 'none' else 'mean')
+                                         iso_code, aggregation_type_1 if aggregation_type_1 != 'none' else 'mean', group=group_data)
         attribute_date_2 = get_attribute(attribute_2, start_date, end_date,
-                                         iso_code, aggregation_type_2 if aggregation_type_2 != 'none' else 'mean')
+                                         iso_code, aggregation_type_2 if aggregation_type_2 != 'none' else 'mean', group=group_data)
         attribute_date_1[attribute_2] = attribute_date_2[attribute_2]
+        
+        if group_data:
+            fig2 = render_bar_compare(attribute_date_1, attribute_1,
+                                      attribute_2, 'location' if group_data is None else 'continent')
+            
         if attribute_3 is not None:
             attribute_date_3 = get_attribute(attribute_3, start_date, end_date,
                                              iso_code, aggregation_type_3)
@@ -531,22 +536,24 @@ def update_all_graphs(
         column_data, columns, style = create_table_bar_styles_multiple_countries(
             attribute_1, attribute_2, start_date, end_date, iso_code)
 
-        fig1 = render_scatter(attribute_date_1, attribute_1, attribute_2, attribute_3, 'location',
+        fig1 = render_scatter(attribute_date_1, attribute_1, attribute_2, attribute_3, 'location' if group_data is None else 'continent',
                               aggregation_type_1 if aggregation_type_1 != 'none' else 'mean',
                               aggregation_type_2 if aggregation_type_2 != 'none' else 'mean')
 
         if aggregation_type_1 != 'none' and aggregation_type_2 != 'none':
             fig2 = render_bar_compare(attribute_date_1, attribute_1,
-                                      attribute_2, "location")
+                                      attribute_2, 'location')
         else:
             attribute_date_1 = get_attribute(attribute_1, start_date, end_date,
-                                             iso_code)
+                                        iso_code)
             attribute_date_2 = get_attribute(attribute_2, start_date, end_date,
-                                             iso_code)
+                                        iso_code)
             attribute_date_1[attribute_2] = attribute_date_2[attribute_2]
             fig2 = render_country_lines(attribute_date_1,
-                                        attribute_1, attribute_2, "date",
-                                        "location")
+                                    attribute_1, attribute_2, "date",
+                                    'location')
+            
+            
     else:
         attribute_data_1 = get_attribute(attribute_1, start_date, end_date,
                                          iso_code, aggregation_type_1)
