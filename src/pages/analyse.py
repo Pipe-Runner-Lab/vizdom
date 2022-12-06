@@ -517,18 +517,28 @@ def update_all_graphs(
     columns = None
     style = [{}]
 
-    if iso_code == "All":
-        # country filter only checked if ISO Code is All
-        filter_data = json.loads(
-            filter_data) if filter_data is not None else {}
-        iso_code = filter_data.get("countries", None)
+    filter_data = json.loads(filter_data) if filter_data is not None else {}
+    iso_code_filter = filter_data.get("countries", None)
+
+    is_single_country = iso_code != "All" or (iso_code == "All" and iso_code_filter and len(iso_code_filter) == 1)
+
+    if not is_single_country:  
+        iso_code = iso_code_filter
         group_data = filter_data.get("group", None)
+        should_group = group_data
+        color_label = list(group_data.keys())[0] if should_group else 'location'
+
+        aggregation_type_1_modified = aggregation_type_1 if aggregation_type_1 != 'none' else 'mean'
+        aggregation_type_2_modified = aggregation_type_2 if aggregation_type_2 != 'none' else 'mean'
+        should_aggregate = (aggregation_type_1 != 'none' or aggregation_type_2 != 'none')
+        
         # Fetch
         attribute_date_1 = get_attribute(attribute_1, start_date, end_date,
-                                         iso_code, aggregation_type_1 if aggregation_type_1 != 'none' else 'mean')
+                                         iso_code, aggregation_type_1_modified, group=group_data)
         attribute_date_2 = get_attribute(attribute_2, start_date, end_date,
-                                         iso_code, aggregation_type_2 if aggregation_type_2 != 'none' else 'mean')
+                                         iso_code, aggregation_type_2_modified, group=group_data)
         attribute_date_1[attribute_2] = attribute_date_2[attribute_2]
+
         if attribute_3 is not None:
             attribute_date_3 = get_attribute(attribute_3, start_date, end_date,
                                              iso_code, aggregation_type_3)
@@ -536,23 +546,20 @@ def update_all_graphs(
 
         column_data, columns, style = create_table_bar_styles_multiple_countries(
             attribute_1, attribute_2, start_date, end_date, iso_code)
+        
+        # plotting
+        fig1 = render_scatter(attribute_date_1, attribute_1, attribute_2, attribute_3, color_label, aggregation_type_1, aggregation_type_2)
 
-        fig1 = render_scatter(attribute_date_1, attribute_1, attribute_2, attribute_3, 'location',
-                              aggregation_type_1 if aggregation_type_1 != 'none' else 'mean',
-                              aggregation_type_2 if aggregation_type_2 != 'none' else 'mean')
-
-        if aggregation_type_1 != 'none' and aggregation_type_2 != 'none':
+        if should_aggregate or should_group:
             fig2 = render_bar_compare(attribute_date_1, attribute_1,
-                                      attribute_2, "location")
+                                      attribute_2, color_label)
         else:
             attribute_date_1 = get_attribute(attribute_1, start_date, end_date,
-                                             iso_code)
+                                        iso_code)
             attribute_date_2 = get_attribute(attribute_2, start_date, end_date,
-                                             iso_code)
+                                        iso_code)
             attribute_date_1[attribute_2] = attribute_date_2[attribute_2]
-            fig2 = render_country_lines(attribute_date_1,
-                                        attribute_1, attribute_2, "date",
-                                        "location")
+            fig2 = render_country_lines(attribute_date_1, attribute_1, attribute_2, "date", 'location')
     else:
         attribute_data_1 = get_attribute(attribute_1, start_date, end_date,
                                          iso_code, aggregation_type_1)
@@ -562,7 +569,6 @@ def update_all_graphs(
         column_data, columns, style = create_table_bar_styles(
             attribute_1, start_date, end_date, iso_code)
         if aggregation_type_1 != 'none' and aggregation_type_2 != 'none':
-
             fig1 = render_scatter(attribute_data_1,
                                   attribute_1, attribute_2, None, None, aggregation_type_1, aggregation_type_2)
             fig2 = render_bar_compare(attribute_data_1, attribute_1,

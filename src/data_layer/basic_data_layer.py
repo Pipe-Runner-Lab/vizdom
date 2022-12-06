@@ -62,24 +62,21 @@ def get_simple_filtered_countries(continent=None, group=None, picked_groups=None
 @hashable_cache(lru_cache(maxsize=32))
 def get_aggregated_total_cases_by_country(attribute, start_date=None, end_date=None, iso_code=None, aggregation_type='latest'):
     df = get_attribute(attribute, start_date, end_date, iso_code)
-    if aggregation_type == "mean" or aggregation_type == "sum":
-        return get_aggregate(df, attribute, aggregation_type)
-    elif aggregation_type == "latest":
-        return get_latest(df, attribute)
-    return df
+    return get_aggregate(df, attribute, aggregation_type)
 
 
 @hashable_cache(lru_cache(maxsize=32))
-def get_attribute(attribute, start_date=None, end_date=None, iso_code=None, aggregation_type=None, resample=True):
+def get_attribute(attribute, start_date=None, end_date=None, iso_code=None, aggregation_type=None, resample=True, group=None):
     query = query_creator(
         iso_code=iso_code, start_date=start_date, end_date=end_date)
-    df = DBConnection().get_df(f'date, location, iso_code, {attribute}', 'covid', query)
-
+    df = DBConnection().get_df(f'date, continent, location, iso_code, {attribute}', 'covid', query)
+    
+    if group:
+        return get_aggregate_grouped(df, attribute, aggregation_type, group)
+        
     # When aggregation is done, we don't need to resample since date will have no meaning
-    if aggregation_type == "mean" or aggregation_type == "sum":
-        return get_aggregate(df, attribute, aggregation_type)
-    elif aggregation_type == "latest":
-        return get_latest(df, attribute)
+    if aggregation_type != None and aggregation_type != 'none':
+        return get_aggregate(df, attribute, aggregation_type, None)
     
     if resample:
         return resample_by_date_range(df, start_date, end_date)
@@ -163,13 +160,23 @@ def get_latest(df, attribute):
     return latest_data.reset_index()
 
 
-def get_aggregate(df, attribute, type):
+def get_aggregate(df, attribute, type, group_column=None):     
     if type == 'mean':
         return df.groupby(by=['location', 'iso_code'], as_index=False)[attribute].mean()
     elif type == 'sum':
         return df.groupby(['location', 'iso_code'], as_index=False)[attribute].sum()
+    elif type == 'latest':
+        return get_latest(df, attribute)
+    raise Exception("Invalid aggregation type")
 
-
+def get_aggregate_grouped(df, attribute, type, group_data):
+    group_column = list(group_data.keys())[0]
+    if type == 'mean':
+        return df.groupby(by=[group_column], as_index=False)[attribute].mean()
+    elif type == 'sum':
+        return df.groupby([group_column], as_index=False)[attribute].sum()
+    raise Exception("Invalid aggregation type")
+        
 
 def create_table_bar_styles_multiple_countries(attribute_1, attribute_2, start_date, end_date, iso_code):
     correlation = compute_corr_two_attributes(
