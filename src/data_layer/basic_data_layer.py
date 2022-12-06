@@ -137,7 +137,7 @@ def compute_corr_two_attributes(attribute_1, attribute_2, start_date=None, end_d
 
 @hashable_cache(lru_cache(maxsize=32))
 def compute_corr_attributes(attribute, start_date=None, end_date=None, iso_code=None):
-    attributes = list(get_our_world_in_data_real_attributes.keys())
+    attributes = get_our_world_in_data_real_attributes.keys()
     query = query_creator(
         iso_code=iso_code, start_date=start_date, end_date=end_date)
     df = DBConnection().get_df(f'date, location, {(", ").join(attributes)}', 'covid', query)
@@ -146,7 +146,7 @@ def compute_corr_attributes(attribute, start_date=None, end_date=None, iso_code=
     corr_matrix = corr_matrix.reset_index()
     corr_matrix.rename(
         columns={'index': 'Attributes', attribute: 'Correlation'}, inplace=True)
-    corr_matrix = corr_matrix.sort_values(by=['Correlation'], ascending=False)
+    # corr_matrix = corr_matrix.sort_values(by=['Correlation'], ascending=False)
     corr_matrix = corr_matrix[corr_matrix['Attributes'] != attribute]
     corr_matrix['Correlation'] = corr_matrix['Correlation'].round(decimals=6)
     return corr_matrix
@@ -183,7 +183,10 @@ def create_table_bar_styles_multiple_countries(attribute_1, attribute_2, start_d
 def create_table_bar_styles(attribute_1, start_date, end_date, iso_code):
     correlation = compute_corr_attributes(
         attribute_1, start_date, end_date, iso_code)
-    data = correlation.to_dict('records')  # type: ignore
+    data = correlation.to_dict('records')  
+    modified_data = []
+    for item in data:
+        modified_data.append({"Attributes": get_our_world_in_data_real_attributes[item["Attributes"]]["label"], "Correlation": item["Correlation"]})
     columns = [{"name": i, "id": i} for i in correlation.columns]
     style = data_bars_diverging('Correlation')
-    return data, columns, style
+    return modified_data, columns, style
