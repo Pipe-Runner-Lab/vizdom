@@ -6,6 +6,7 @@ from scipy.stats.stats import pearsonr
 from utils.util import hashable_cache, data_bars_diverging
 from crawlers.url_crawlers import get_our_world_in_data_attributes, get_our_world_in_data_real_attributes
 
+
 @hashable_cache(lru_cache(maxsize=32))
 def get_filtered_countries(iso_code, attribute_conditions):
     query = query_creator(iso_code=iso_code)
@@ -34,6 +35,29 @@ def get_filtered_countries(iso_code, attribute_conditions):
                 df = df[df[attribute] != float(condition['value'])]
 
     return df["iso_code"].unique().tolist()
+
+
+@hashable_cache(lru_cache(maxsize=32))
+def get_simple_filtered_countries(continent=None, group=None, picked_groups=None, should_group=False):
+    df = DBConnection().get_df(
+        'iso_code, gdp_per_capita, continent', 'covid')
+    group = None
+
+    if continent:
+        df = df[df.continent.isin(continent)]
+        if should_group:
+            if picked_groups:
+                # TODO
+                pass
+            else:
+                group = {
+                    "continent": {},
+                }
+                for continent in df.continent.unique():
+                    group["continent"][continent] = df[df.continent ==
+                                                       continent].iso_code.unique().tolist()
+
+    return df["iso_code"].unique().tolist(), group
 
 
 @hashable_cache(lru_cache(maxsize=32))
@@ -81,10 +105,22 @@ def get_list_of_countries():
     return dict
 
 
+@cache
+def get_list_of_continents():
+    df = DBConnection().get_df('continent', 'covid')
+    df = df.groupby(['continent']).size().reset_index()
+    dict = {}
+    for continent in df.continent:
+        dict[continent] = {"label": continent}
+    return dict
+
+
 @hashable_cache(lru_cache(maxsize=32))
 def compute_corr_two_attributes(attribute_1, attribute_2, start_date=None, end_date=None, iso_code=None):
-    df1 = get_attribute(attribute_1, start_date, end_date, iso_code, None, False)
-    df2 = get_attribute(attribute_2, start_date, end_date, iso_code, None, False)
+    df1 = get_attribute(attribute_1, start_date,
+                        end_date, iso_code, None, False)
+    df2 = get_attribute(attribute_2, start_date,
+                        end_date, iso_code, None, False)
     df1[attribute_2] = df2[attribute_2]
     unique_countries = df1.location.unique()
     corr_matrix = []
@@ -92,13 +128,14 @@ def compute_corr_two_attributes(attribute_1, attribute_2, start_date=None, end_d
         data = df1[df1.location == country]
         corr = []
         if ((data[attribute_1] == data[attribute_1].iloc[0]).all()) or ((data[attribute_2] == data[attribute_2].iloc[0]).all()):
-            corr = [0,0]
+            corr = [0, 0]
         else:
             corr = pearsonr(data[attribute_1], data[attribute_2])
         corr_matrix.append([country, round(corr[0], 6)])
     data_corr = pd.DataFrame(corr_matrix, columns=[
         'Country', 'Correlation'])
     return data_corr.sort_values(by=['Correlation'], ascending=False)
+
 
 @hashable_cache(lru_cache(maxsize=32))
 def compute_corr_attributes(attribute, start_date=None, end_date=None, iso_code=None):
@@ -107,16 +144,18 @@ def compute_corr_attributes(attribute, start_date=None, end_date=None, iso_code=
     for attr in attributes:
         if attr != attribute:
             attr_label = get_our_world_in_data_real_attributes[attr]["label"]
-            df2 = get_attribute(attr, start_date, end_date, iso_code, None, False)
+            df2 = get_attribute(attr, start_date, end_date,
+                                iso_code, None, False)
             df1[attr_label] = df2[attr]
 
     corr_matrix = df1.corr(method='pearson')[[attribute]]
     corr_matrix = corr_matrix.fillna(0)
     corr_matrix = corr_matrix.reset_index()
-    corr_matrix.rename(columns={'index': 'Attributes', attribute: 'Correlation'}, inplace=True)
+    corr_matrix.rename(
+        columns={'index': 'Attributes', attribute: 'Correlation'}, inplace=True)
     corr_matrix = corr_matrix.sort_values(by=['Correlation'], ascending=False)
     corr_matrix = corr_matrix[corr_matrix['Attributes'] != attribute]
-    corr_matrix['Correlation'] = corr_matrix['Correlation'].round(decimals = 6)
+    corr_matrix['Correlation'] = corr_matrix['Correlation'].round(decimals=6)
     return corr_matrix
 
 
@@ -129,6 +168,7 @@ def get_latest(df, attribute):
         latest = data.tail(1)
         latest_data = pd.concat([latest_data, latest])
     return latest_data.reset_index()
+
 
 def get_aggregate(df, attribute, type):
     agg_data = pd.DataFrame()
@@ -146,6 +186,7 @@ def get_aggregate(df, attribute, type):
     agg_data[attribute] = values
     return agg_data
 
+
 def create_table_bar_styles_multiple_countries(attribute_1, attribute_2, start_date, end_date, iso_code):
     correlation = compute_corr_two_attributes(
         attribute_1, attribute_2, start_date, end_date, iso_code)
@@ -153,6 +194,7 @@ def create_table_bar_styles_multiple_countries(attribute_1, attribute_2, start_d
     columns = [{"name": i, "id": i} for i in correlation.columns]
     style = data_bars_diverging('Correlation')
     return data, columns, style
+
 
 def create_table_bar_styles(attribute_1, start_date, end_date, iso_code):
     correlation = compute_corr_attributes(

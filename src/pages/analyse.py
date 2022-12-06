@@ -6,7 +6,7 @@ from components.line.line import render_line, render_two_lines, render_country_l
 from components.bar.bar import render_bar_compare
 from components.layouts.page_layouts import three_splitter_v2
 from crawlers.url_crawlers import get_our_world_in_data_attributes, get_our_world_in_data_real_attributes
-from data_layer.basic_data_layer import get_list_of_countries, get_total_number_of_cases_by_date, get_attribute, get_filtered_countries, create_table_bar_styles_multiple_countries, create_table_bar_styles
+from data_layer.basic_data_layer import get_list_of_countries, get_total_number_of_cases_by_date, get_attribute, get_filtered_countries, create_table_bar_styles_multiple_countries, create_table_bar_styles, get_simple_filtered_countries, get_list_of_continents
 import dash_bootstrap_components as dbc
 from utils.util import normalize
 from utils.date_range import get_date_range
@@ -16,6 +16,7 @@ from components.filter_input.filter_input import render_filter_input
 # * static data
 
 countries = get_list_of_countries()
+continents = get_list_of_continents()
 list_of_attributes = get_our_world_in_data_attributes.items()
 list_of_real_attributes = get_our_world_in_data_real_attributes.items()
 # * Register route
@@ -81,7 +82,7 @@ layout = three_splitter_v2(
                     } for country in countries
                     ]
                 ],
-                value="All",
+                value="NOR",
                 id="analyse-country-dropdown",
                 multi=False,
                 clearable=False,
@@ -209,47 +210,123 @@ layout = three_splitter_v2(
             )
         ],
             className="action-wrapper"),
-        html.Div([
-            html.Div("Filter Panel", className="title"),
-            dcc.Dropdown(options=[{
-                "value":
-                country,
-                "label":
-                countries.get(country, {}).get('label')
-            } for country in countries],
-                multi=True,
-                placeholder="Filter by countries",
-                id="analyse-country-filter",
-                value=['NOR', 'IND']),
-            dcc.Dropdown(options=[{
-                "value": attributes,
-                "label": attributes_info['label']
-            } for attributes, attributes_info in list_of_real_attributes],
-                multi=True,
-                placeholder="Filter by attributes",
-                id="analyse-attribute-filter",
-                value=None),
-            html.Div([],
-                     className="filter-advanced-container",
-                     id="analyse-filter-advanced-container"),
-            html.Div([],
-                     className="filter-advanced-error-container",
-                     id="analyse-filter-advanced-error-container"),
-            html.Div([],
-                     className="filter-advanced-success-container",
-                     id="analyse-filter-advanced-success-container"),
-            dbc.Button(
-                "Apply Filter", color="success", id="analyse-apply-filter", className='success-button'),
-            dcc.Store(id='analyse-filter-data')
-        ],
+        html.Div(
+            [
+                html.Div("Filter Panel", className="title"),
+                dcc.RadioItems([
+                    'Simple', 'Advanced'],
+                    'Simple',
+                    inline=True,
+                    id="analyse-filter-type-radio",
+                    className="radio"
+                ),
+                html.Div(
+                    [
+                        dcc.Dropdown(
+                            options=[{"value": continent, "label": continents.get(
+                                continent, {}).get('label')} for continent in continents],
+                            multi=True,
+                            clearable=True,
+                            placeholder="Filter by continent",
+                            id="analyse-continent-filter",
+                            value=[]
+                        ),
+                        dcc.Dropdown(
+                            options=[{"value": country, "label": countries.get(
+                                country, {}).get('label')} for country in countries],
+                            multi=False,
+                            clearable=True,
+                            placeholder="Filter by group",
+                            id="analyse-group-filter",
+                            value=None
+                        ),
+                        dcc.Dropdown(
+                            options=[{"value": country, "label": countries.get(
+                                country, {}).get('label')} for country in countries],
+                            multi=True,
+                            clearable=True,
+                            placeholder="Pick groups",
+                            id="analyse-selected-group-filter",
+                            value=[]
+                        ),
+                        dcc.Checklist(
+                            ['Show grouped data'],
+                            id="analyse-should-group-checklist",
+                            className="checklist",
+                            value=[]
+                        )
+                    ],
+                    id="analyse-simple-filter",
+                    className="inner-action-wrapper",
+                    style={"display": "flex"}
+                ),
+                html.Div(
+                    [
+                        dcc.Dropdown(
+                            options=[{"value": country, "label": countries.get(
+                                country, {}).get('label')} for country in countries],
+                            multi=True,
+                            placeholder="Filter by countries",
+                            id="analyse-country-filter",
+                            value=[]
+                        ),
+                        dcc.Dropdown(
+                            options=[{"value": attributes, "label": attributes_info['label']}
+                                     for attributes, attributes_info in list_of_real_attributes],
+                            multi=True,
+                            placeholder="Filter by attributes",
+                            id="analyse-attribute-filter",
+                            value=[]
+                        ),
+                        html.Div(
+                            [],
+                            className="filter-advanced-container",
+                            id="analyse-filter-advanced-container"
+                        ),
+                        html.Div(
+                            [],
+                            className="filter-advanced-error-container",
+                            id="analyse-filter-advanced-error-container"
+                        ),
+                    ],
+                    id="analyse-advanced-filter",
+                    className="inner-action-wrapper",
+                    style={"display": "none"}
+                ),
+                html.Div(
+                    [],
+                    className="filter-advanced-success-container",
+                    id="analyse-filter-advanced-success-container"
+                ),
+                dbc.Button(
+                    "Apply Filter", color="success", id="analyse-apply-filter", className='success-button'),
+                dcc.Store(id='analyse-filter-data', data="{}"),
+            ],
             id="analyse-filter-panel",
-            className="action-wrapper filter-panel")
+            className="action-wrapper filter-panel",
+            style={
+                "display": "none"
+            }
+        )
     ],
     id="analyse-page")
 
 # ---------------------------------------------------------------------------- #
 #                               FILTER CALLBACKS                               #
 # ---------------------------------------------------------------------------- #
+
+
+@ callback(
+    Output('analyse-simple-filter', 'style'),
+    Output('analyse-advanced-filter', 'style'),
+    Input('analyse-filter-type-radio', 'value'),
+    prevent_initial_call=True
+)
+def toggle_filter_type(filter_type):
+    if filter_type == "Simple":
+        return {"display": "flex"}, {"display": "none"}
+    else:
+        return {"display": "none"}, {"display": "flex"}
 
 
 @callback(
@@ -265,8 +342,10 @@ def toggle_main_graph(data, n_clicks):
         raise PreventUpdate
 
 
-@callback(Output("analyse-filter-panel", "style"),
-          Input("analyse-country-dropdown", "value"))
+@callback(
+    Output("analyse-filter-panel", "style"),
+    Input("analyse-country-dropdown", "value")
+)
 def toggle_filter_panel(iso_code):
     if iso_code == "All":
         return {"display": "flex"}
@@ -278,6 +357,7 @@ def toggle_filter_panel(iso_code):
     Output("analyse-filter-advanced-container", "children"),
     Input("analyse-attribute-filter", "value"),
     State("analyse-filter-advanced-container", "children"),
+    prevent_initial_call=True
 )
 def update_advanced_filter(attributes, children):
     if attributes is None:
@@ -290,41 +370,59 @@ def update_advanced_filter(attributes, children):
     Output("analyse-filter-advanced-error-container", "children"),
     Output("analyse-filter-advanced-success-container", "children"),
     Input("analyse-apply-filter", "n_clicks"),
+    State('analyse-filter-type-radio', 'value'),
     State("analyse-country-filter", "value"),
     State("analyse-attribute-filter", "value"),
-    State({
-        'type': 'filter-input',
-        'index': ALL
-    }, 'value'))
-def update_filter(n_clicks, countries, attribute, filter_expressions):
-    error_in = []
-    filter_data = []
-    error_block = None
+    State({'type': 'filter-input', 'index': ALL}, 'value'),
+    State('analyse-continent-filter', 'value'),
+    State('analyse-group-filter', 'value'),
+    State('analyse-selected-group-filter', 'value'),
+    State('analyse-should-group-checklist', 'value'),
+    prevent_initial_call=True
+)
+def update_filter(n_clicks, filter_type, countries, attribute, filter_expressions, continents, group, selected_group, should_group):
+    if filter_type == "Simple":
+        if len(selected_group) == 0:
+            selected_group = None
 
-    if attribute is not None:
-        for attribute_command in zip(attribute, filter_expressions):
-            try:
-                filter_data.append(
-                    (attribute_command[0], parse(attribute_command[1])))
-            except Exception as e:
-                error_in.append(attribute_command[0])
+        should_group = True if len(should_group) == 1 else False
 
-    if len(error_in) != 0:
-        error_block = dbc.Alert(
-            f"Skipping invalid filter expression for {(', ').join(error_in)}",
-            color="danger",
-            class_name="alert")
+        countries, group = get_simple_filtered_countries(
+            continents, should_group=should_group)
 
-    if len(filter_data) > 0:
-        countries = get_filtered_countries(countries, filter_data)
+        success_message = "Found " + str(len(countries)) + " countries" if len(
+            countries) > 0 else "No countries found, showing all countries"
+        success_block = dbc.Alert(
+            success_message, color="success", class_name="alert")
 
-    success_message = "Found " + str(len(countries)) + " countries" if len(
-        countries) > 0 else "No countries found, showing all countries"
-    success_block = dbc.Alert(success_message,
-                              color="success",
-                              class_name="alert")
+        return json.dumps({"countries": countries, "group": group}), [], success_block
 
-    return json.dumps({"countries": countries}), error_block, success_block
+    else:
+        error_in = []
+        filter_data = []
+        error_block = None
+
+        if attribute is not None:
+            for attribute_command in zip(attribute, filter_expressions):
+                try:
+                    filter_data.append(
+                        (attribute_command[0], parse(attribute_command[1])))
+                except Exception as e:
+                    error_in.append(attribute_command[0])
+
+        if len(error_in) != 0:
+            error_block = dbc.Alert(
+                f"Skipping invalid filter expression for {(', ').join(error_in)}", color="danger", class_name="alert")
+
+        if len(filter_data) > 0:
+            countries = get_filtered_countries(countries, filter_data)
+
+        success_message = "Found " + str(len(countries)) + " countries" if len(
+            countries) > 0 else "No countries found, showing all countries"
+        success_block = dbc.Alert(
+            success_message, color="success", class_name="alert")
+
+        return json.dumps({"countries": countries}), error_block, success_block
 
 
 # ---------------------------------------------------------------------------- #
@@ -433,7 +531,7 @@ def update_all_graphs(
             attribute_1, attribute_2, start_date, end_date, iso_code)
 
         fig1 = render_scatter(attribute_date_1, attribute_1, attribute_2, attribute_3, 'location',
-                              aggregation_type_1 if aggregation_type_1 != 'none' else 'mean', 
+                              aggregation_type_1 if aggregation_type_1 != 'none' else 'mean',
                               aggregation_type_2 if aggregation_type_2 != 'none' else 'mean')
 
         if aggregation_type_1 != 'none' and aggregation_type_2 != 'none':
@@ -441,9 +539,9 @@ def update_all_graphs(
                                       attribute_2, "location")
         else:
             attribute_date_1 = get_attribute(attribute_1, start_date, end_date,
-                                         iso_code)
+                                             iso_code)
             attribute_date_2 = get_attribute(attribute_2, start_date, end_date,
-                                         iso_code)
+                                             iso_code)
             attribute_date_1[attribute_2] = attribute_date_2[attribute_2]
             fig2 = render_country_lines(attribute_date_1,
                                         attribute_1, attribute_2, "date",

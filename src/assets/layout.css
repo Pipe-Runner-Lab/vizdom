@@ -134,8 +134,15 @@
   flex-direction: column;
 }
 
+.filter-panel-inner{
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: auto;
+}
+
 .filter-advanced-container {
-  height: 40%;
+  height: 60%;
   display: flex;
   flex-direction: column;
   border: solid 1px #E0E0E0;
@@ -148,7 +155,7 @@
   margin-top: 8px;
 }
 
-.filter-advanced-error-container, .filter-advanced-success-container {
+.filter-advanced-error-container {
   flex: 1;
 }
 
