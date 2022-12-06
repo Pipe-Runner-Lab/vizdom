@@ -513,9 +513,10 @@ def update_all_graphs(
 
     if iso_code == "All":
         # country filter only checked if ISO Code is All
-        filter_data = json.loads(filter_data)
+        filter_data = json.loads(
+            filter_data) if filter_data is not None else {}
         iso_code = filter_data.get("countries", None)
-
+        group_data = filter_data.get("group", None)
         # Fetch
         attribute_date_1 = get_attribute(attribute_1, start_date, end_date,
                                          iso_code, aggregation_type_1 if aggregation_type_1 != 'none' else 'mean')
