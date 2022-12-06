@@ -9,7 +9,7 @@ def get_our_world_in_data():
 
 def get_mask_data():
     url = '../data/covid_mask_data.csv'
-    df = pd.read_csv(url, parse_dates=['date'])
+    df = pd.read_csv(url, parse_dates=['date'])  # type: ignore
     df = df.rename({'location_name': 'location', 'CountryCode': 'iso_code'}, axis=1)
     df = df.drop(columns=['location_id'])
     return df
