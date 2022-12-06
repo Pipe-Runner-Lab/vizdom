@@ -20,7 +20,7 @@ list_of_real_attributes = get_our_world_in_data_real_attributes.items()
 all_attributes = [attribute for attribute, _ in list_of_real_attributes]
 
 @hashable_cache(lru_cache(maxsize=32))
-def get_prediction(model_type, target_attribute, iso_code, attribute, predict_days=90, params=None):
+def get_prediction(model_types, target_attribute, iso_code, attribute, predict_days=90):
     if (attribute == None or len(attribute) == 0):
         attribute = all_attributes 
     else:
@@ -44,34 +44,33 @@ def get_prediction(model_type, target_attribute, iso_code, attribute, predict_da
     y_shift_dropped = y_shift.dropna(axis=0)
     x_sort_dropped = x_sort.drop(x_sort.tail(number_of_nans).index)
     
-    
-    if model_type == "lasso":
-        alpha = model_params["lasso"]["alpha"]
-        max_iter = model_params["lasso"]["max_iter"]
-        if params:
-            alpha = params.get("alpha", alpha)
-            max_iter = params.get("max_iter", max_iter)
-        steps_lasso = [
-            ('scalar', StandardScaler()),
-            ('poly', PolynomialFeatures(degree=2)),
-            ('model', Lasso(alpha=float(alpha), fit_intercept=True, max_iter=int(max_iter)))
-        ]
-        model = Pipeline(steps_lasso)
-        model.fit(x_sort_dropped, y_shift_dropped[target_attribute])
-    elif model_type == "ridge":
-        steps_ridge = [
-            ('scalar', StandardScaler()),
-            ('poly', PolynomialFeatures(degree=1)),
-            ('model', Ridge(alpha=0.01, fit_intercept=True))
-        ]
-        model = Pipeline(steps_ridge)
-        model.fit(x_sort_dropped, y_shift_dropped[target_attribute])
-    else:
-        raise ValueError("Model type not supported")
+    y_hat = {}
 
-    y_hat = model.predict(x_sort)
+    for model_type in model_types:
+        if model_type == "lasso":
+            alpha = model_params["lasso"]["alpha"]
+            max_iter = model_params["lasso"]["max_iter"]
+            steps_lasso = [
+                ('scalar', StandardScaler()),
+                ('poly', PolynomialFeatures(degree=2)),
+                ('model', Lasso(alpha=float(alpha), fit_intercept=True, max_iter=int(max_iter)))
+            ]
+            model = Pipeline(steps_lasso)
+            model.fit(x_sort_dropped, y_shift_dropped[target_attribute])
+        elif model_type == "ridge":
+            steps_ridge = [
+                ('scalar', StandardScaler()),
+                ('poly', PolynomialFeatures(degree=1)),
+                ('model', Ridge(alpha=0.01, fit_intercept=True))
+            ]
+            model = Pipeline(steps_ridge)
+            model.fit(x_sort_dropped, y_shift_dropped[target_attribute])
+        else:
+            raise ValueError("Model type not supported")
+
+        y_hat[model_type] = abs(model.predict(x_sort))
 
     # move date forward by 3 months for plotting
     y_shift = y_shift.shift(predict_days, freq='D')
 
-    return abs(y_hat), y_shift
+    return y_hat, y_shift

@@ -40,21 +40,24 @@ def render_line(data, x_column, y_column, color_column=None):
     return fig
 
 
-def render_prediction_line(data, original_col, data_shifted=None, prediction=None, delay=90):
+def render_prediction_line(data, original_col, data_shifted=None, predictions=None, delay=90):
     fig = go.Figure()
-    if data_shifted is not None and prediction is not None:
-        max_date = datetime.strptime(data['date'].max(), '%Y-%m-%d %H:%M:%S') + timedelta(days=delay)
-        min_date = datetime.strptime(data['date'].min(), '%Y-%m-%d %H:%M:%S')
-        data_shifted = data_shifted.loc[(data_shifted.index > min_date) & (data_shifted.index < max_date)]
-        fig.add_trace(go.Scatter(
-            x=data_shifted.index, y=prediction,
-            line=go.scatter.Line(dash="dot", color=px.colors.qualitative.Alphabet[0]),
-            name=f'Predicted {get_our_world_in_data_attributes[original_col]["label"]}',
-        ))
+    if data_shifted is not None and predictions is not None:
+        idx = 0
+        for model, prediction in predictions.items():
+            max_date = datetime.strptime(data['date'].max(), '%Y-%m-%d %H:%M:%S') + timedelta(days=delay)
+            min_date = datetime.strptime(data['date'].min(), '%Y-%m-%d %H:%M:%S')
+            data_shifted = data_shifted.loc[(data_shifted.index > min_date) & (data_shifted.index < max_date)]
+            fig.add_trace(go.Scatter(
+                x=data_shifted.index, y=prediction,
+                line=go.scatter.Line(dash="dot", color=px.colors.qualitative.Alphabet[idx]),
+                name=f'Predicted {get_our_world_in_data_attributes[original_col]["label"]} ({model})',
+            ))
+            idx += 1
     fig.add_trace(go.Scatter(
         x=data['date'], y=data[original_col],
         line=go.scatter.Line(dash="solid", color=px.colors.qualitative.Alphabet[1]),
-        opacity=0.3 if prediction is not None else 1,
+        opacity=0.3 if predictions is not None else 1,
         name=f'Original {get_our_world_in_data_attributes[original_col]["label"]}',
     ))
     fig.update_layout(

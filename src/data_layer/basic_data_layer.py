@@ -4,7 +4,7 @@ import pandas as pd
 from .util import resample_by_date_range, query_creator
 from scipy.stats.stats import pearsonr
 from utils.util import hashable_cache, data_bars_diverging
-from crawlers.url_crawlers import get_our_world_in_data_attributes, get_our_world_in_data_real_attributes
+from crawlers.url_crawlers import get_our_world_in_data_real_attributes
 
 
 @hashable_cache(lru_cache(maxsize=32))
@@ -54,18 +54,17 @@ def get_simple_filtered_countries(continent=None, group=None, picked_groups=None
                     "continent": {},
                 }
                 for continent in df.continent.unique():
-                    group["continent"][continent] = df[df.continent ==
-                                                       continent].iso_code.unique().tolist()
+                    group["continent"][continent] = df[df.continent ==continent].iso_code.unique().tolist()
 
     return df["iso_code"].unique().tolist(), group
 
 
 @hashable_cache(lru_cache(maxsize=32))
-def get_aggregated_total_cases_by_country(start_date=None, end_date=None, iso_code=None):
+def get_aggregated_total_cases_by_country(attribute, start_date=None, end_date=None, iso_code=None, aggregation_type='latest'):
     query = query_creator(
         iso_code=iso_code, start_date=start_date, end_date=end_date)
-    df = DBConnection().get_df('iso_code, total_cases, location, date', 'covid', query)
-    df = get_latest(df, 'total_cases')
+    df = DBConnection().get_df(f'iso_code, {attribute}, location, date', 'covid', query)
+    df =  get_latest(df, attribute)
     return df
 
 
