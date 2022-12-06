@@ -393,15 +393,14 @@ def update_filter(n_clicks, filter_type, countries, attribute, filter_expression
 
         should_group = True if len(should_group) == 1 else False
 
-        countries, group = get_simple_filtered_countries(
-            continents, should_group=should_group)
+        countries, group_data = get_simple_filtered_countries(continents, group=group, selected_group=selected_group, should_group=should_group)
 
         success_message = "Found " + str(len(countries)) + " countries" if len(
             countries) > 0 else "No countries found, showing all countries"
         success_block = dbc.Alert(
             success_message, color="success", class_name="alert")
 
-        return json.dumps({"countries": countries, "group": group}), [], success_block
+        return json.dumps({"countries": countries, "group": group_data}), [], success_block
 
     else:
         error_in = []

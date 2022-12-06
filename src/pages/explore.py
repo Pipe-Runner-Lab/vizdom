@@ -298,11 +298,10 @@ def update_filter(n_clicks, filter_type, countries, attribute, filter_expression
     if filter_type == "Simple":
         if len(selected_group) == 0:
             selected_group = None
-        
+
         should_group = True if len(should_group) == 1 else False
-        
-        countries, group = get_simple_filtered_countries(
-            continents, should_group=should_group)
+
+        countries, group_data = get_simple_filtered_countries(continents, group=group, selected_group=selected_group, should_group=should_group)
 
         success_message = "Found " + str(len(countries)) + " countries" if len(
             countries) > 0 else "No countries found, showing all countries"

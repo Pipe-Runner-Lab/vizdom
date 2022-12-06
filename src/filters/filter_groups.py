@@ -1,5 +1,5 @@
 custom_groups = {
-  "Income Groups": {
+  "Income Groups Percentile": {
     "Low Income": {},
     "Lower Middle Income": {},
     "Upper Middle Income": {},
@@ -8,5 +8,11 @@ custom_groups = {
   "Education": {
     "Primary": {},
     "Secondary": {},
+  }
+}
+
+quartiles = {
+  "Income Groups": {
+    "column": "gdp_per_capita"
   }
 }

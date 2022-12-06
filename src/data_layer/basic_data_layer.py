@@ -5,6 +5,7 @@ from .util import resample_by_date_range, query_creator
 from scipy.stats.stats import pearsonr
 from utils.util import hashable_cache, data_bars_diverging
 from crawlers.url_crawlers import get_our_world_in_data_real_attributes
+from filters.filter_groups import custom_groups, quartiles
 
 
 @hashable_cache(lru_cache(maxsize=32))
@@ -38,25 +39,52 @@ def get_filtered_countries(iso_code, attribute_conditions):
 
 
 @hashable_cache(lru_cache(maxsize=32))
-def get_simple_filtered_countries(continent=None, group=None, picked_groups=None, should_group=False):
+def get_simple_filtered_countries(continent=None, group=None, selected_group=None, should_group=False):
     df = DBConnection().get_df(
         'iso_code, gdp_per_capita, continent', 'covid')
-    group = None
 
     if continent:
         df = df[df.continent.isin(continent)]
-        if should_group:
-            if picked_groups:
-                # TODO
-                pass
-            else:
-                group = {
-                    "continent": {},
-                }
-                for continent in df.continent.unique():
-                    group["continent"][continent] = df[df.continent ==continent].iso_code.unique().tolist()
+        
+    countries = df.iso_code.unique().tolist()
+    
+    # if grouping is needed
+    if selected_group and group:
+        countries = []
+        group_title = group
+        group = {
+            group_title: {},
+        }
+        
+        if group_title in list(quartiles.keys()):
+            column = quartiles[group_title]['column']
+            quantile = 1 / len(list(custom_groups[group_title].keys()))
+            curr_quantile = quantile
 
-    return df["iso_code"].unique().tolist(), group
+            idx = 0
+            for available_group in list(custom_groups[group_title].keys()):
+                if idx == 0:
+                    group[group_title][available_group] = df[df[column] < df[column].quantile(curr_quantile)].iso_code.unique().tolist()
+                elif idx == len(selected_group) - 1:
+                    group[group_title][available_group] = df[df[column] >= df[column].quantile(curr_quantile)].iso_code.unique().tolist()
+                else:
+                    group[group_title][available_group] = df[(df[column] >= df[column].quantile(curr_quantile)) & (df[column] < df[column].quantile(curr_quantile + quantile))].iso_code.unique().tolist()
+                curr_quantile += quantile
+
+            for picked_group in selected_group:
+                countries += group[group_title][picked_group]
+        else:
+            raise Exception('Not implemented')
+
+        countries = list(set(countries))
+    else:
+        group = {
+            "continent": {},
+        }
+        for continent in df.continent.unique():
+            group["continent"][continent] = df[df.continent ==continent].iso_code.unique().tolist()
+
+    return countries, group if should_group else None
 
 
 @hashable_cache(lru_cache(maxsize=32))
