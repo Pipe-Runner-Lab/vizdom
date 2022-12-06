@@ -1,8 +1,8 @@
 import json
 from dash import html, dcc, register_page, Input, Output, callback, State, ALL
 from components.map.map import render_map
-from components.line.line import render_line
-from components.bar.bar import render_bar
+from components.line.line import render_line, render_two_lines, render_country_lines
+from components.bar.bar import render_bar_compare, render_bar
 from components.layouts.page_layouts import three_splitter_v1
 from data_layer.basic_data_layer import get_aggregated_total_cases_by_country, get_list_of_countries, get_total_number_of_cases_by_date, get_attribute, get_filtered_countries, get_list_of_continents, get_simple_filtered_countries
 import dash_bootstrap_components as dbc
@@ -308,7 +308,7 @@ def update_filter(n_clicks, filter_type, countries, attribute, filter_expression
         success_block = dbc.Alert(
             success_message, color="success", class_name="alert")
 
-        return json.dumps({"countries": countries, "group": group}), [], success_block
+        return json.dumps({"countries": countries, "group": group_data}), [], success_block
 
     else:
         error_in = []
@@ -380,16 +380,33 @@ def update_bottom_graph(iso_code, relayoutData, filter_data):
 )
 def update_all_graphs(iso_code, attribute, aggregation_type, relayoutData, filter_data):
     start_date, end_date = get_date_range(relayoutData)
+    filter_data = json.loads(filter_data) if filter_data is not None else {}
+    iso_code_filter = filter_data.get("countries", None)
+    
+    
+    is_single_country = iso_code != "All" or (iso_code == "All" and iso_code_filter and len(iso_code_filter) == 1)
 
-    if iso_code == "All":
-        # country filter only checked if ISO Code is All
-        filter_data = json.loads(
-            filter_data) if filter_data is not None else {}
-        iso_code = filter_data.get("countries", None)
-        group = filter_data.get("group", None)
+    if not is_single_country: 
+        iso_code = iso_code_filter
+        group_data = filter_data.get("group", None)
+        should_group = group_data
+        # if group_data:
+        print(group_data)
+        color_label = list(group_data.keys())[0] if should_group else 'location'
+        
+        aggregation_type_modified = aggregation_type if aggregation_type != 'none' else 'mean'
+        should_aggregate = (aggregation_type != 'none')
 
+        # Fetch
         attribute_date = get_attribute(
-            attribute, start_date, end_date, iso_code, aggregation_type)
+            attribute, start_date, end_date, iso_code, aggregation_type_modified)
+        
+        if should_aggregate or should_group:
+            fig2 = render_bar(attribute_date, attribute, color_label)
+        else:
+            attribute_date = get_attribute(attribute, start_date, end_date,
+                                        iso_code)
+            fig2 = render_line(attribute_date, attribute, "date", 'location')
     else:
         attribute_date = get_attribute(
             attribute, start_date, end_date, iso_code, aggregation_type)
