@@ -61,10 +61,11 @@ def get_simple_filtered_countries(continent=None, group=None, picked_groups=None
 
 @hashable_cache(lru_cache(maxsize=32))
 def get_aggregated_total_cases_by_country(attribute, start_date=None, end_date=None, iso_code=None, aggregation_type='latest'):
-    query = query_creator(
-        iso_code=iso_code, start_date=start_date, end_date=end_date)
-    df = DBConnection().get_df(f'iso_code, {attribute}, location, date', 'covid', query)
-    df =  get_latest(df, attribute)
+    df = get_attribute(attribute, start_date, end_date, iso_code)
+    if aggregation_type == "mean" or aggregation_type == "sum":
+        return get_aggregate(df, attribute, aggregation_type)
+    elif aggregation_type == "latest":
+        return get_latest(df, attribute)
     return df
 
 
@@ -72,12 +73,10 @@ def get_aggregated_total_cases_by_country(attribute, start_date=None, end_date=N
 def get_attribute(attribute, start_date=None, end_date=None, iso_code=None, aggregation_type=None, resample=True):
     query = query_creator(
         iso_code=iso_code, start_date=start_date, end_date=end_date)
-    df = DBConnection().get_df(f'date, location, {attribute}', 'covid', query)
-    
+    df = DBConnection().get_df(f'date, location, iso_code, {attribute}', 'covid', query)
+
     # When aggregation is done, we don't need to resample since date will have no meaning
-    if aggregation_type == "mean":
-        return get_aggregate(df, attribute, aggregation_type)
-    elif aggregation_type == "sum":
+    if aggregation_type == "mean" or aggregation_type == "sum":
         return get_aggregate(df, attribute, aggregation_type)
     elif aggregation_type == "latest":
         return get_latest(df, attribute)
@@ -165,20 +164,10 @@ def get_latest(df, attribute):
 
 
 def get_aggregate(df, attribute, type):
-    agg_data = pd.DataFrame()
-    values = []
-    unique_countries = df.location.unique()
-    agg_data['location'] = unique_countries
-    for country in unique_countries:
-        data = df[df.location == country]
-        value = 0
-        if type == 'mean':
-            value = data[attribute].mean()
-        elif type == 'sum':
-            value = data[attribute].sum()
-        values.append(value)
-    agg_data[attribute] = values
-    return agg_data
+    if type == 'mean':
+        return df.groupby(by=['location', 'iso_code'], as_index=False)[attribute].mean()
+    elif type == 'sum':
+        return df.groupby(['location', 'iso_code'], as_index=False)[attribute].sum()
 
 
 
