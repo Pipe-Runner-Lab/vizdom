@@ -12,6 +12,7 @@ from utils.util import normalize
 from utils.date_range import get_date_range
 from utils.expression_parser import parse
 from components.filter_input.filter_input import render_filter_input
+from filters.filter_groups import custom_groups
 
 # * static data
 
@@ -232,8 +233,7 @@ layout = three_splitter_v2(
                             value=[]
                         ),
                         dcc.Dropdown(
-                            options=[{"value": country, "label": countries.get(
-                                country, {}).get('label')} for country in countries],
+                            options=[{"value": group, "label": group} for group in custom_groups.keys()],
                             multi=False,
                             clearable=True,
                             placeholder="Filter by group",
@@ -241,8 +241,7 @@ layout = three_splitter_v2(
                             value=None
                         ),
                         dcc.Dropdown(
-                            options=[{"value": country, "label": countries.get(
-                                country, {}).get('label')} for country in countries],
+                            options=[],
                             multi=True,
                             clearable=True,
                             placeholder="Pick groups",
@@ -315,6 +314,13 @@ layout = three_splitter_v2(
 #                               FILTER CALLBACKS                               #
 # ---------------------------------------------------------------------------- #
 
+@ callback(
+    Output("analyse-selected-group-filter", "options"),
+    Input("analyse-group-filter", "value"),
+    prevent_initial_call=True
+)
+def update_group_filter(selected_group):
+    return [{"value": group, "label": group} for group in custom_groups.get(selected_group, {}).keys()]
 
 @ callback(
     Output('analyse-simple-filter', 'style'),
