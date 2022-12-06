@@ -61,9 +61,6 @@ def get_simple_filtered_countries(continent=None, group=None, picked_groups=None
 
 @hashable_cache(lru_cache(maxsize=32))
 def get_aggregated_total_cases_by_country(attribute, start_date=None, end_date=None, iso_code=None, aggregation_type='latest'):
-    # query = query_creator(
-    #     iso_code=iso_code, start_date=start_date, end_date=end_date)
-    # df = DBConnection().get_df(f'iso_code, {attribute}, location, date', 'covid', query)
     df = get_attribute(attribute, start_date, end_date, iso_code)
     if aggregation_type == "mean" or aggregation_type == "sum":
         return get_aggregate(df, attribute, aggregation_type)
@@ -83,6 +80,7 @@ def get_attribute(attribute, start_date=None, end_date=None, iso_code=None, aggr
         return get_aggregate(df, attribute, aggregation_type)
     elif aggregation_type == "latest":
         return get_latest(df, attribute)
+    
     if resample:
         return resample_by_date_range(df, start_date, end_date)
     return df
@@ -118,15 +116,14 @@ def get_list_of_continents():
 
 @hashable_cache(lru_cache(maxsize=32))
 def compute_corr_two_attributes(attribute_1, attribute_2, start_date=None, end_date=None, iso_code=None):
-    df1 = get_attribute(attribute_1, start_date,
-                        end_date, iso_code, None, False)
-    df2 = get_attribute(attribute_2, start_date,
-                        end_date, iso_code, None, False)
-    df1[attribute_2] = df2[attribute_2]
-    unique_countries = df1.location.unique()
+    attributes = [attribute_1, attribute_2]
+    query = query_creator(
+        iso_code=iso_code, start_date=start_date, end_date=end_date)
+    df = DBConnection().get_df(f'date, location, {(", ").join(attributes)}', 'covid', query)
+    unique_countries = df.location.unique()
     corr_matrix = []
     for country in unique_countries:
-        data = df1[df1.location == country]
+        data = df[df.location == country]
         corr = []
         if ((data[attribute_1] == data[attribute_1].iloc[0]).all()) or ((data[attribute_2] == data[attribute_2].iloc[0]).all()):
             corr = [0, 0]
@@ -140,16 +137,11 @@ def compute_corr_two_attributes(attribute_1, attribute_2, start_date=None, end_d
 
 @hashable_cache(lru_cache(maxsize=32))
 def compute_corr_attributes(attribute, start_date=None, end_date=None, iso_code=None):
-    df1 = get_attribute(attribute, start_date, end_date, iso_code, None, False)
     attributes = list(get_our_world_in_data_real_attributes.keys())
-    for attr in attributes:
-        if attr != attribute:
-            attr_label = get_our_world_in_data_real_attributes[attr]["label"]
-            df2 = get_attribute(attr, start_date, end_date,
-                                iso_code, None, False)
-            df1[attr_label] = df2[attr]
-
-    corr_matrix = df1.corr(method='pearson')[[attribute]]
+    query = query_creator(
+        iso_code=iso_code, start_date=start_date, end_date=end_date)
+    df = DBConnection().get_df(f'date, location, {(", ").join(attributes)}', 'covid', query)
+    corr_matrix = df.corr(method='pearson')[[attribute]]
     corr_matrix = corr_matrix.fillna(0)
     corr_matrix = corr_matrix.reset_index()
     corr_matrix.rename(
@@ -176,6 +168,7 @@ def get_aggregate(df, attribute, type):
         return df.groupby(by=['location', 'iso_code'], as_index=False)[attribute].mean()
     elif type == 'sum':
         return df.groupby(['location', 'iso_code'], as_index=False)[attribute].sum()
+
 
 
 def create_table_bar_styles_multiple_countries(attribute_1, attribute_2, start_date, end_date, iso_code):
