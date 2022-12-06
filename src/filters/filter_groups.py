@@ -12,7 +12,7 @@ custom_groups = {
 }
 
 quartiles = {
-  "Income Groups": {
+  "Income Groups Percentile": {
     "column": "gdp_per_capita"
   }
 }
