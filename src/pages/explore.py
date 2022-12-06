@@ -388,14 +388,13 @@ def update_all_graphs(iso_code, attribute, aggregation_type, relayoutData, filte
         attribute_date = get_attribute(
             attribute, start_date, end_date, iso_code, aggregation_type)
 
-    country_agg_data = get_aggregated_total_cases_by_country(
-        start_date, end_date, iso_code)
+    country_agg_data = get_aggregated_total_cases_by_country(attribute, start_date, end_date, iso_code, 'latest' if aggregation_type == 'none' else aggregation_type)
 
     if aggregation_type != "none":
         fig2 = render_bar(attribute_date, "location", attribute)
     else:
         fig2 = render_line(attribute_date, "date", attribute, "location")
 
-    fig1 = render_map(country_agg_data, "total_cases")
+    fig1 = render_map(country_agg_data, attribute, aggregation_type = 'latest' if aggregation_type == 'none' else aggregation_type)
 
     return fig1, fig2, {"opacity": "1"}, {"opacity": "1"}
