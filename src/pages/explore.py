@@ -10,6 +10,7 @@ from crawlers.url_crawlers import get_our_world_in_data_attributes, get_our_worl
 from components.filter_input.filter_input import render_filter_input
 from utils.date_range import get_date_range
 from utils.expression_parser import parse
+from filters.filter_groups import custom_groups
 
 # * static data
 countries = get_list_of_countries()
@@ -147,8 +148,7 @@ layout = three_splitter_v1(
                             value=[]
                         ),
                         dcc.Dropdown(
-                            options=[{"value": country, "label": countries.get(
-                                country, {}).get('label')} for country in countries],
+                            options=[{"value": group, "label": group} for group in custom_groups.keys()],
                             multi=False,
                             clearable=True,
                             placeholder="Filter by group",
@@ -156,8 +156,7 @@ layout = three_splitter_v1(
                             value=None
                         ),
                         dcc.Dropdown(
-                            options=[{"value": country, "label": countries.get(
-                                country, {}).get('label')} for country in countries],
+                            options=[],
                             multi=True,
                             clearable=True,
                             placeholder="Pick groups",
@@ -258,6 +257,14 @@ def toggle_filter_panel(iso_code):
         return {"display": "flex"}
     else:
         return {"display": "none"}
+
+@ callback(
+    Output("explore-selected-group-filter", "options"),
+    Input("explore-group-filter", "value"),
+    prevent_initial_call=True
+)
+def update_group_filter(selected_group):
+    return [{"value": group, "label": group} for group in custom_groups.get(selected_group, {}).keys()]
 
 
 @ callback(
