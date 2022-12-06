@@ -547,7 +547,7 @@ def update_all_graphs(
             attribute_1, attribute_2, start_date, end_date, iso_code)
         
         # plotting
-        fig1 = render_scatter(attribute_date_1, attribute_1, attribute_2, attribute_3, color_label, aggregation_type_1, aggregation_type_2)
+        fig1 = render_scatter(attribute_date_1, attribute_1, attribute_2, attribute_3, color_label, aggregation_type_1_modified, aggregation_type_2_modified)
 
         if should_aggregate or should_group:
             fig2 = render_bar_compare(attribute_date_1, attribute_1,
@@ -560,24 +560,22 @@ def update_all_graphs(
             attribute_date_1[attribute_2] = attribute_date_2[attribute_2]
             fig2 = render_country_lines(attribute_date_1, attribute_1, attribute_2, "date", 'location')
     else:
-        attribute_data_1 = get_attribute(attribute_1, start_date, end_date,
-                                         iso_code, aggregation_type_1)
-        attribute_data_2 = get_attribute(attribute_2, start_date, end_date,
-                                         iso_code, aggregation_type_2)
+        if iso_code == "All":
+            iso_code = iso_code_filter
+        attribute_data_1 = get_attribute(attribute_1, start_date, end_date, iso_code, aggregation_type_1)
+        attribute_data_2 = get_attribute(attribute_2, start_date, end_date, iso_code, aggregation_type_2)
+        
         attribute_data_1[attribute_2] = attribute_data_2[attribute_2]
-        column_data, columns, style = create_table_bar_styles(
-            attribute_1, start_date, end_date, iso_code)
+        
+        column_data, columns, style = create_table_bar_styles(attribute_1, start_date, end_date, iso_code)
+        
         if aggregation_type_1 != 'none' and aggregation_type_2 != 'none':
-            fig1 = render_scatter(attribute_data_1,
-                                  attribute_1, attribute_2, None, None, aggregation_type_1, aggregation_type_2)
-            fig2 = render_bar_compare(attribute_data_1, attribute_1,
-                                      attribute_2, "location")
+            fig1 = render_scatter(attribute_data_1, attribute_1, attribute_2, None, None, aggregation_type_1, aggregation_type_2)
+            fig2 = render_bar_compare(attribute_data_1, attribute_1, attribute_2, "location")
         else:
             attribute_data_1_norm = normalize(attribute_data_1)
-            fig1 = render_scatter(attribute_data_1_norm,
-                                  attribute_1, attribute_2)
-            fig2 = render_two_lines(attribute_data_1,
-                                    attribute_1, attribute_2, "date")
+            fig1 = render_scatter(attribute_data_1_norm, attribute_1, attribute_2)
+            fig2 = render_two_lines(attribute_data_1, attribute_1, attribute_2, "date")
 
     if should_swap:
         fig1, fig2 = fig2, fig1

@@ -24,8 +24,15 @@ def render_bar_compare(df, y_column_1, y_column_2, x_column):
                     go.Bar(name=attr1_label_truncated, x=df[x_column], y=df[y_column_1], yaxis='y', offsetgroup=1),
                     go.Bar(name=attr2_label_truncated, x=df[x_column], y=df[y_column_2], yaxis='y2', offsetgroup=2)
                     ], )
+    title = f'Comparing cases for attributes'
     fig.update_layout(
-        margin=dict(r=12, t=24, b=16),
+        title={
+        'text': title,
+        'y':0.9,
+        'x':0.5,
+        'xanchor': 'center',
+        'yanchor': 'top'},
+        margin=dict(r=12, t=(64 if title else 24), b=16),
         legend_title="",
         legend=dict(
             font=dict(

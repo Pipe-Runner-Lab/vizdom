@@ -23,12 +23,15 @@ def render_line(data, x_column, y_column, color_column=None, should_show_date_ra
             line={'dash': 'solid', 'color': color},
             name=f"{label_truncated}")
             )
-
-    title = f'Selected Date: {data[x_column].min().split(" ")[0]} to {data[x_column].max().split(" ")[0]}' if should_show_date_range else None
+    trend_title = f'Trend for attribute: {y_label}'
+    title = f'Selected Date: {data[x_column].min().split(" ")[0]} to {data[x_column].max().split(" ")[0]}' if should_show_date_range else trend_title
     fig.update_layout(
         title={
-            'text': title
-        },
+        'text': title,
+        'y':0.9,
+        'x':0.5,
+        'xanchor': 'center',
+        'yanchor': 'top'},
         margin=dict(r=12, t=(64 if title else 24), b=16),
         legend_title="",
         legend=dict(
@@ -47,6 +50,7 @@ def render_line(data, x_column, y_column, color_column=None, should_show_date_ra
 
 def render_prediction_line(data, original_col, data_shifted=None, predictions=None, delay=90):
     fig = go.Figure()
+    label = get_our_world_in_data_attributes[original_col]["label"]
     if data_shifted is not None and predictions is not None:
         idx = 0
         for model, prediction in predictions.items():
@@ -56,17 +60,24 @@ def render_prediction_line(data, original_col, data_shifted=None, predictions=No
             fig.add_trace(go.Scatter(
                 x=data_shifted.index, y=prediction,
                 line=go.scatter.Line(dash="dot", color=px.colors.qualitative.Alphabet[idx]),
-                name=f'Predicted {get_our_world_in_data_attributes[original_col]["label"]} ({model})',
+                name=f'Predicted {label} ({model})',
             ))
             idx += 1
     fig.add_trace(go.Scatter(
         x=data['date'], y=data[original_col],
         line=go.scatter.Line(dash="solid", color=px.colors.qualitative.Alphabet[1]),
         opacity=0.3 if predictions is not None else 1,
-        name=f'Original {get_our_world_in_data_attributes[original_col]["label"]}',
+        name=f'Original {label}',
     ))
+    title = f'Prediction for attribute: {label}'
     fig.update_layout(
-        margin=dict(r=12, t=24, b=16),
+        title={
+        'text': title,
+        'y':0.9,
+        'x':0.5,
+        'xanchor': 'center',
+        'yanchor': 'top'},
+        margin=dict(r=12, t=(64 if title else 24), b=16),
         legend=dict(
             font=dict(
                 size=12,
@@ -111,8 +122,15 @@ def render_country_lines(data, y_column_1, y_column_2, x_column, country, color_
             line={'dash': 'solid', 'color': color},
             name=f"{attr2_label_truncated}"),
             secondary_y=True)
+    title = f'Trend for countries with attributes: {attr1_label} and {attr2_label}'
     fig.update_layout(
-        margin=dict(r=12, t=24, b=16),
+        title={
+        'text': title,
+        'y':0.9,
+        'x':0.5,
+        'xanchor': 'center',
+        'yanchor': 'top'},
+        margin=dict(r=12, t=(64 if title else 24), b=16),
         legend=dict(
             font=dict(
                 size=10,
@@ -147,8 +165,15 @@ def render_two_lines(df, y_column_1, y_column_2, x_column):
                   mode='lines',
                   name=attr2_label_truncated),
                   secondary_y=True)
+    title = f'Trend for attributes: {attr1_label} and {attr2_label}'
     fig.update_layout(
-        margin=dict(r=12, t=24, b=16),
+        title={
+        'text': title,
+        'y':0.9,
+        'x':0.5,
+        'xanchor': 'center',
+        'yanchor': 'top'},
+        margin=dict(r=12, t=(64 if title else 24), b=16),
         legend=dict(
             font=dict(
                 size=12,
