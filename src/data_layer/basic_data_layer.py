@@ -70,7 +70,7 @@ def get_simple_filtered_countries(
                         .iso_code.unique()
                         .tolist()
                     )
-                elif idx == len(selected_group) - 1:
+                elif idx == len(list(custom_groups[group_title].keys())) - 1:
                     group[group_title][available_group] = (
                         df[df[column] >= df[column].quantile(curr_quantile)]
                         .iso_code.unique()
@@ -89,6 +89,7 @@ def get_simple_filtered_countries(
                         .tolist()
                     )
                 curr_quantile += quantile
+                idx += 1
 
             temp_group = {
                 group_title: {},
