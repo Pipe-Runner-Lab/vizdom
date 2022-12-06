@@ -394,9 +394,7 @@ def update_filter(n_clicks, filter_type, countries, attribute, filter_expression
         should_group = True if len(should_group) == 1 else False
 
         countries, group_data = get_simple_filtered_countries(continents, group=group, selected_group=selected_group, should_group=should_group)
-
-        print(group_data)
-
+        
         success_message = "Found " + str(len(countries)) + " countries" if len(
             countries) > 0 else "No countries found, showing all countries"
         success_block = dbc.Alert(
