@@ -243,7 +243,7 @@ def get_aggregate(df, attribute, type, group_column=None):
 def get_aggregate_grouped(df, attribute, type, group_data):
     group_column = list(group_data.keys())[0]
     grouped_data = pd.DataFrame(columns=[group_column, attribute])
-    
+
     for group, countries in group_data[group_column].items():
         df_countries = df.loc[df.iso_code.isin(countries)]
         if type == "mean":
