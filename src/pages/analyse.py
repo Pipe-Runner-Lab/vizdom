@@ -505,6 +505,9 @@ def aggregation_logic_enforcer(aggregation_type_1, aggregation_type_2):
 def update_all_graphs(
     iso_code, attribute_1, attribute_2, attribute_3, aggregation_type_1, aggregation_type_2, aggregation_type_3, relayoutData, filter_data, should_swap
 ):
+    if attribute_1 == attribute_2 or attribute_1 == attribute_3 or attribute_2 == attribute_3:
+        raise PreventUpdate
+
     if aggregation_type_1 == 'none' and aggregation_type_2 != 'none':
         raise PreventUpdate
     elif aggregation_type_1 != 'none' and aggregation_type_2 == 'none':

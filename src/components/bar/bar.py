@@ -10,8 +10,6 @@ def render_bar(df, x_column, y_column, color_column=None):
         x_label = get_our_world_in_data_attributes[x_column]["label"]
     except:
         x_label = x_column
-    print(df)
-    print(x_column, y_column, color_column)
     fig = px.bar(df, y=y_column, x=x_column, color=color_column, labels={
                     x_column: x_label,
                     y_column: get_our_world_in_data_attributes[y_column]["label"]})
