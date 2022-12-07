@@ -200,7 +200,7 @@ def update_bottom_graph(iso_code, relayoutData):
     total_num_cases = get_total_number_of_cases_by_date(
         iso_code=iso_code, start_date=start_date, end_date=end_date)
     total_num_cases = total_num_cases
-    return render_line(total_num_cases, "date", "total_cases", should_show_date_range=True),  {"opacity": "1"}
+    return render_line(total_num_cases, "date", "total_cases_per_million", should_show_date_range=True),  {"opacity": "1"}
 
 
 # ---------------------------------------------------------------------------- #

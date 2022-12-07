@@ -154,7 +154,7 @@ def get_attribute(
 @hashable_cache(lru_cache(maxsize=32))
 def get_total_number_of_cases_by_date(iso_code=None, start_date=None, end_date=None):
     query = query_creator(iso_code=iso_code, start_date=start_date, end_date=end_date)
-    df = DBConnection().get_df("date, total_cases, location", "covid", query)
+    df = DBConnection().get_df("date, total_cases_per_million, location", "covid", query)
     return resample_by_date_range(df, start_date, end_date)
 
 

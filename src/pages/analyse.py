@@ -451,7 +451,7 @@ def update_bottom_graph(iso_code, relayoutData, filter_data):
 
     total_num_cases = get_total_number_of_cases_by_date(
         iso_code=iso_code, start_date=start_date, end_date=end_date)
-    return render_line(total_num_cases, "date", "total_cases", "location", should_show_date_range=True), {"opacity": "1"}
+    return render_line(total_num_cases, "date", "total_cases_per_million", "location", should_show_date_range=True), {"opacity": "1"}
 
 # --------------------------- AGGREGATION ENFORCER --------------------------- #
 
