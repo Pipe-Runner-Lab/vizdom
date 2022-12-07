@@ -59,40 +59,37 @@ def get_simple_filtered_countries(
 
         if group_title in list(quartiles.keys()):
             column = quartiles[group_title]["column"]
+            mean_df = df.groupby(["iso_code", "continent"], as_index=False).mean()
             quantile = 1 / len(list(custom_groups[group_title].keys()))
             curr_quantile = quantile
 
             idx = 0
             for available_group in list(custom_groups[group_title].keys()):
                 if idx == 0: 
-                    q_0 = df[column].quantile(curr_quantile)
-                    min_val = df[column].min()
+                    q_0 = mean_df[column].quantile(curr_quantile)
+                    min_val = mean_df[column].min()
                     group[group_title][available_group] = (
-                        df[df[column] < q_0 if q_0 > min_val else df[column] <= q_0]
+                        mean_df[mean_df[column] < q_0 if q_0 != min_val else mean_df[column] <= q_0]
                         .iso_code.unique()
                         .tolist()
                     )
                     
-                elif idx == len(list(custom_groups[group_title].keys())) - 1:
+                elif idx == (len(list(custom_groups[group_title].keys())) - 1):
                     group[group_title][available_group] = (
-                        df[df[column] >= df[column].quantile(curr_quantile)]
+                        mean_df[mean_df[column] >= mean_df[column].quantile(curr_quantile)]
                         .iso_code.unique()
                         .tolist()
                     )
                 else:
                     group[group_title][available_group] = (
-                        df[
-                            (df[column] >= df[column].quantile(curr_quantile))
-                            & (
-                                df[column]
-                                < df[column].quantile(curr_quantile + quantile)
-                            )
+                        mean_df[
+                            (mean_df[column] >= mean_df[column].quantile(curr_quantile))
+                            & (mean_df[column] < mean_df[column].quantile(curr_quantile + quantile))
                         ]
                         .iso_code.unique()
                         .tolist()
                     )
-                
-                curr_quantile += quantile
+                    curr_quantile += quantile    
                 idx += 1
 
             temp_group = {
