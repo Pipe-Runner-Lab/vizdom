@@ -23,8 +23,7 @@ def render_line(data, x_column, y_column, color_column=None, should_show_date_ra
             line={'dash': 'solid', 'color': color},
             name=f"{label_truncated}")
             )
-    trend_title = f'Trend for attribute: {y_label}'
-    title = f'Selected Date: {data[x_column].min().split(" ")[0]} to {data[x_column].max().split(" ")[0]}' if should_show_date_range else trend_title
+    title = f'Selected Date: {data[x_column].min().split(" ")[0]} to {data[x_column].max().split(" ")[0]}' if should_show_date_range else None
     fig.update_layout(
         title={
         'text': title,
@@ -32,7 +31,7 @@ def render_line(data, x_column, y_column, color_column=None, should_show_date_ra
         'x':0.5,
         'xanchor': 'center',
         'yanchor': 'top'},
-        margin=dict(r=12, t=(64 if title else 24), b=16),
+        margin=dict(r=12, t=(54 if title else 24), b=16),
         legend_title="",
         legend=dict(
             font=dict(
@@ -69,15 +68,8 @@ def render_prediction_line(data, original_col, data_shifted=None, predictions=No
         opacity=0.3 if predictions is not None else 1,
         name=f'Original {label}',
     ))
-    title = f'Prediction for attribute: {label}'
     fig.update_layout(
-        title={
-        'text': title,
-        'y':0.9,
-        'x':0.5,
-        'xanchor': 'center',
-        'yanchor': 'top'},
-        margin=dict(r=12, t=(64 if title else 24), b=16),
+        margin=dict(r=12, t=24, b=16),
         legend=dict(
             font=dict(
                 size=12,
@@ -85,6 +77,8 @@ def render_prediction_line(data, original_col, data_shifted=None, predictions=No
             ),
         )
     )
+    fig.update_xaxes(title_text="Date")
+    fig.update_yaxes(title_text=f"{label}")
     fig.update_xaxes(showspikes=True, spikecolor="green", spikesnap="cursor", spikemode="across", spikethickness=1)
     fig.update_yaxes(showspikes=True, spikecolor="green", spikethickness=1)
     return fig
@@ -122,15 +116,8 @@ def render_country_lines(data, y_column_1, y_column_2, x_column, country, color_
             line={'dash': 'solid', 'color': color},
             name=f"{attr2_label_truncated}"),
             secondary_y=True)
-    title = f'Trend for countries with attributes: {attr1_label} and {attr2_label}'
     fig.update_layout(
-        title={
-        'text': title,
-        'y':0.9,
-        'x':0.5,
-        'xanchor': 'center',
-        'yanchor': 'top'},
-        margin=dict(r=12, t=(64 if title else 24), b=16),
+        margin=dict(r=12, t=(24), b=16),
         legend=dict(
             font=dict(
                 size=10,
@@ -165,15 +152,8 @@ def render_two_lines(df, y_column_1, y_column_2, x_column):
                   mode='lines',
                   name=attr2_label_truncated),
                   secondary_y=True)
-    title = f'Trend for attributes: {attr1_label} and {attr2_label}'
     fig.update_layout(
-        title={
-        'text': title,
-        'y':0.9,
-        'x':0.5,
-        'xanchor': 'center',
-        'yanchor': 'top'},
-        margin=dict(r=12, t=(64 if title else 24), b=16),
+        margin=dict(r=12, t=24, b=16),
         legend=dict(
             font=dict(
                 size=12,
