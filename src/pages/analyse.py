@@ -552,25 +552,25 @@ def update_all_graphs(
         
         # plotting
         fig1 = render_scatter(attribute_data_1, attribute_1, attribute_2, attribute_3, color_label, aggregation_type_1_modified, aggregation_type_2_modified)
-        if len(iso_code) == 1:  # type: ignore
-            attribute_1_constant = (attribute_data_1[attribute_1] == attribute_data_1[attribute_1][0]).all()
-            attribute_2_constant = (attribute_data_1[attribute_2] == attribute_data_1[attribute_2][0]).all()
-            if (attribute_1_constant) or (attribute_2_constant):
-                attribute_date_mean = None
-                if (attribute_1_constant):
-                    attribute_date_mean = get_attribute(attribute_2, start_date, end_date, iso_code, 'mean')
-                    attribute_date_mean[attribute_1] = attribute_data_1[attribute_1][0]
+        # if len(iso_code) == 1:  # type: ignore
+        #     attribute_1_constant = (attribute_data_1[attribute_1] == attribute_data_1[attribute_1][0]).all()
+        #     attribute_2_constant = (attribute_data_1[attribute_2] == attribute_data_1[attribute_2][0]).all()
+        #     if (attribute_1_constant) or (attribute_2_constant):
+        #         attribute_date_mean = None
+        #         if (attribute_1_constant):
+        #             attribute_date_mean = get_attribute(attribute_2, start_date, end_date, iso_code, 'mean')
+        #             attribute_date_mean[attribute_1] = attribute_data_1[attribute_1][0]
                     
-                if (attribute_2_constant):
-                    attribute_date_mean = get_attribute(attribute_1, start_date, end_date, iso_code, 'mean')
-                    attribute_date_mean[attribute_2] = attribute_data_1[attribute_2][0]
+        #         if (attribute_2_constant):
+        #             attribute_date_mean = get_attribute(attribute_1, start_date, end_date, iso_code, 'mean')
+        #             attribute_date_mean[attribute_2] = attribute_data_1[attribute_2][0]
                     
-                fig1 = render_scatter(attribute_date_mean, attribute_1, attribute_2, aggregation_type_1='mean', aggregation_type_2='mean')
-                fig2 = render_two_lines(attribute_data_1, attribute_1, attribute_2, "date")
-            else:   
-                attribute_data_1_norm = normalize(attribute_data_1)
-                fig1 = render_scatter(attribute_data_1_norm, attribute_1, attribute_2)
-                fig2 = render_two_lines(attribute_data_1, attribute_1, attribute_2, "date")
+        #         fig1 = render_scatter(attribute_date_mean, attribute_1, attribute_2, aggregation_type_1='mean', aggregation_type_2='mean')
+        #         fig2 = render_two_lines(attribute_data_1, attribute_1, attribute_2, "date")
+        #     else:   
+        #         attribute_data_1_norm = normalize(attribute_data_1)
+        #         fig1 = render_scatter(attribute_data_1_norm, attribute_1, attribute_2)
+        #         fig2 = render_two_lines(attribute_data_1, attribute_1, attribute_2, "date")
     
         if should_aggregate or should_group:
             fig2 = render_bar_compare(attribute_data_1, attribute_1,
@@ -596,24 +596,27 @@ def update_all_graphs(
             fig1 = render_scatter(attribute_data_1, attribute_1, attribute_2, None, None, aggregation_type_1, aggregation_type_2)
             fig2 = render_bar_compare(attribute_data_1, attribute_1, attribute_2, "location")
         else:
-            attribute_1_constant = (attribute_data_1[attribute_1] == attribute_data_1[attribute_1][0]).all()
-            attribute_2_constant = (attribute_data_1[attribute_2] == attribute_data_1[attribute_2][0]).all()
-            if (attribute_1_constant) or (attribute_2_constant):
-                attribute_date_mean = None
-                if (attribute_1_constant):
-                    attribute_date_mean = get_attribute(attribute_2, start_date, end_date, iso_code, 'mean')
-                    attribute_date_mean[attribute_1] = attribute_data_1[attribute_1][0]
+            attribute_data_1_norm = normalize(attribute_data_1)
+            fig1 = render_scatter(attribute_data_1_norm, attribute_1, attribute_2)
+            fig2 = render_two_lines(attribute_data_1, attribute_1, attribute_2, "date")
+            # attribute_1_constant = (attribute_data_1[attribute_1] == attribute_data_1[attribute_1][0]).all()
+            # attribute_2_constant = (attribute_data_1[attribute_2] == attribute_data_1[attribute_2][0]).all()
+            # if (attribute_1_constant) or (attribute_2_constant):
+            #     attribute_date_mean = None
+            #     if (attribute_1_constant):
+            #         attribute_date_mean = get_attribute(attribute_2, start_date, end_date, iso_code, 'mean')
+            #         attribute_date_mean[attribute_1] = attribute_data_1[attribute_1][0]
                     
-                if (attribute_2_constant):
-                    attribute_date_mean = get_attribute(attribute_1, start_date, end_date, iso_code, 'mean')
-                    attribute_date_mean[attribute_2] = attribute_data_1[attribute_2][0]
+            #     if (attribute_2_constant):
+            #         attribute_date_mean = get_attribute(attribute_1, start_date, end_date, iso_code, 'mean')
+            #         attribute_date_mean[attribute_2] = attribute_data_1[attribute_2][0]
                     
-                fig1 = render_scatter(attribute_date_mean, attribute_1, attribute_2, aggregation_type_1='mean', aggregation_type_2='mean')
-                fig2 = render_two_lines(attribute_data_1, attribute_1, attribute_2, "date")
-            else:   
-                attribute_data_1_norm = normalize(attribute_data_1)
-                fig1 = render_scatter(attribute_data_1_norm, attribute_1, attribute_2)
-                fig2 = render_two_lines(attribute_data_1, attribute_1, attribute_2, "date")
+            #     fig1 = render_scatter(attribute_date_mean, attribute_1, attribute_2, aggregation_type_1='mean', aggregation_type_2='mean')
+            #     fig2 = render_two_lines(attribute_data_1, attribute_1, attribute_2, "date")
+            # else:   
+            #     attribute_data_1_norm = normalize(attribute_data_1)
+            #     fig1 = render_scatter(attribute_data_1_norm, attribute_1, attribute_2)
+            #     fig2 = render_two_lines(attribute_data_1, attribute_1, attribute_2, "date")
 
     if should_swap:
         fig1, fig2 = fig2, fig1
