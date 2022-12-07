@@ -391,7 +391,6 @@ def update_all_graphs(iso_code, attribute, aggregation_type, relayoutData, filte
         group_data = filter_data.get("group", None)
         should_group = group_data
         # if group_data:
-        print(group_data)
         color_label = list(group_data.keys())[0] if should_group else 'location'
         
         aggregation_type_modified = aggregation_type if aggregation_type != 'none' else 'mean'
@@ -399,10 +398,10 @@ def update_all_graphs(iso_code, attribute, aggregation_type, relayoutData, filte
 
         # Fetch
         attribute_date = get_attribute(
-            attribute, start_date, end_date, iso_code, aggregation_type_modified)
+            attribute, start_date, end_date, iso_code, aggregation_type_modified, group=group_data)
         
         if should_aggregate or should_group:
-            fig2 = render_bar(attribute_date, attribute, color_label)
+            fig2 = render_bar(attribute_date, color_label, attribute)
         else:
             attribute_date = get_attribute(attribute, start_date, end_date,
                                         iso_code)
