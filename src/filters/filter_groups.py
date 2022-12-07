@@ -7,18 +7,21 @@ custom_groups = {
   },
   "Expected Years of Schooling Percentile": {
     "Low": {},
-    "Medium": {},
+    "Low Medium": {},
+    "High Medium": {},
     "High": {}
   },
   "Population Density Percentile": {
     "Low Density": {},
-    "Medium Density": {},
+    "Low Medium Density": {},
+    "High Medium Density": {},
     "High Density": {}
   },
   "Human Development Index Percentile": {
-    "Low": {},
-    "Medium": {},
-    "High": {}
+    "Low HDI": {},
+    "Low Medium HDI": {},
+    "High Medium HDI": {},
+    "High HDI": {}
   }
 }
 
