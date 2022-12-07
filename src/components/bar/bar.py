@@ -5,14 +5,26 @@ from plotly.subplots import make_subplots
 from crawlers.url_crawlers import get_our_world_in_data_attributes
 
 
-def render_bar(df, x_column, y_column, color_column=None):
+def render_bar(df, x_column, y_column, color_column=None, aggregation_type=None):
     try:
         x_label = get_our_world_in_data_attributes[x_column]["label"]
     except:
         x_label = x_column
+    y_label = get_our_world_in_data_attributes[y_column]["label"]
     fig = px.bar(df, y=y_column, x=x_column, color=color_column, labels={
                     x_column: x_label,
-                    y_column: get_our_world_in_data_attributes[y_column]["label"]})
+                    y_column: y_label})
+    title = f'{aggregation_type} of {y_label}'
+    fig.update_layout(
+        margin=dict(r=12, t=24, b=16),
+        legend_title="",
+        legend=dict(
+            font=dict(
+                size=12,
+                color="black"
+            ),
+        )
+    )
     return fig
 
 def render_bar_compare(df, y_column_1, y_column_2, x_column):
@@ -28,15 +40,8 @@ def render_bar_compare(df, y_column_1, y_column_2, x_column):
                     go.Bar(name=attr1_label_truncated, x=df[x_column], y=df[y_column_1], yaxis='y', offsetgroup=1),
                     go.Bar(name=attr2_label_truncated, x=df[x_column], y=df[y_column_2], yaxis='y2', offsetgroup=2)
                     ], )
-    title = f'Comparing cases for attributes'
     fig.update_layout(
-        title={
-        'text': title,
-        'y':0.9,
-        'x':0.5,
-        'xanchor': 'center',
-        'yanchor': 'top'},
-        margin=dict(r=12, t=(64 if title else 24), b=16),
+        margin=dict(r=12, t=24, b=16),
         legend_title="",
         legend=dict(
             font=dict(

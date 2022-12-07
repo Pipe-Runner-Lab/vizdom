@@ -69,8 +69,14 @@ layout = three_splitter_v1(
                     className="sub-title"
                 ),
                 dcc.Dropdown(
-                    options=[{"value": attributes, "label": attributes_info['label']}
-                             for attributes, attributes_info in list_of_real_attributes],
+                    options=[
+                        {'label': 'New Cases', 'value': 'new_cases'},
+                        {'label': 'Total Cases', 'value': 'total_cases'},
+                        {'label': 'New Deaths', 'value': 'new_deaths'},
+                        {'label': 'Total Deaths', 'value': 'total_deaths'},
+                    ],
+                    # options=[{"value": attributes, "label": attributes_info['label']}
+                    #          for attributes, attributes_info in list_of_real_attributes],
                     value="new_deaths",
                     id="predict-attribute-dropdown",
                     multi=False,
@@ -105,8 +111,21 @@ layout = three_splitter_v1(
                     className="sub-title"
                 ),
                 dcc.Dropdown(
-                    options=[{"value": attributes, "label": attributes_info['label']}
-                             for attributes, attributes_info in list_of_real_attributes],
+                    options=[
+                        {'label': 'New Cases', 'value': 'new_cases'},
+                        {'label': 'Total Cases', 'value': 'total_cases'},
+                        {'label': 'New Deaths', 'value': 'new_deaths'},
+                        {'label': 'Total Deaths', 'value': 'total_deaths'},
+                        {'label': 'People Vaccinated', 'value': 'people_vaccinated'},
+                        {'label': 'People Fully Vaccinated', 'value': 'people_fully_vaccinated'},
+                        {'label': 'Female Smokers', 'value': 'female_smokers'},
+                        {'label': 'Male Smokers', 'value': 'male_smokers'},
+                        {'label': 'Life Expectancy', 'value': 'life_expectancy'},
+                        {'label': 'Cardiovasc Death Rate', 'value': 'cardiovasc_death_rate'},
+                        {'label': 'Diabetes Prevalence', 'value': 'diabetes_prevalence'},
+                        {'label': 'Hospital Patients', 'value': 'hosp_patients'},
+                        {'label': 'Stringency Index', 'value': 'stringency_index'}
+                    ], 
                     multi=True,
                     placeholder="Select attributes for model",
                     id="predict-model-attribute-dropdown",

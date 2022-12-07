@@ -59,6 +59,22 @@ get_our_world_in_data_attributes = {
     'expected_years_of_school': {"type": "REAL", "label": "Expected Years of School"}
 }
 
+get_attributes_for_predict = {
+    'new_cases': {"type": "REAL", "label": "New Cases"},
+    'total_cases':{"type": "REAL", "label": "Total Cases"},
+    'new_deaths':{"type": "REAL", "label": "New Deaths"},
+    'total_deaths':{"type": "REAL", "label": "Total Deaths"},
+    'people_vaccinated':{"type": "REAL", "label": "People Vaccinated"},
+    'people_fully_vaccinated': {"type": "REAL", "label": "People Fully Vaccinated"},
+    'female_smokers': {"type": "REAL", "label": "Female Smokers"},
+    'male_smokers': {"type": "REAL", "label": "Male Smokers"},
+    'life_expectancy': {"type": "REAL", "label": "Life Expectancy"},
+    'cardiovasc_death_rate': {"type": "REAL", "label": "Cardiovasc Death Rate"},
+    'diabetes_prevalence':{"type": "REAL", "label": "Diabetes Prevalence"},
+    'hosp_patients': {"type": "REAL", "label": "Hospital Patients"},
+    'stringency_index': {"type": "REAL", "label": "Stringency Index"}
+}
+
 get_our_world_in_data_real_attributes = {}
 
 for key, value in zip(get_our_world_in_data_attributes.keys(), get_our_world_in_data_attributes.values()):

@@ -384,7 +384,8 @@ def update_all_graphs(iso_code, attribute, aggregation_type, relayoutData, filte
     
     iso_code_filter = filter_data.get("countries", None)
     is_single_country = iso_code != "All" or (iso_code == "All" and iso_code_filter and len(iso_code_filter) == 1)
-
+    aggregation_type_modified = aggregation_type if aggregation_type != 'none' else 'mean'
+    
     if not is_single_country: 
         iso_code = iso_code_filter
         group_data = filter_data.get("group", None)
@@ -392,7 +393,7 @@ def update_all_graphs(iso_code, attribute, aggregation_type, relayoutData, filte
         # if group_data:
         color_label = list(group_data.keys())[0] if should_group else 'location'
         
-        aggregation_type_modified = aggregation_type if aggregation_type != 'none' else 'mean'
+        
         should_aggregate = (aggregation_type != 'none')
 
         # Fetch
@@ -400,16 +401,16 @@ def update_all_graphs(iso_code, attribute, aggregation_type, relayoutData, filte
             attribute, start_date, end_date, iso_code, aggregation_type_modified, group=group_data)
         
         if should_aggregate or should_group:
-            fig2 = render_bar(attribute_date, color_label, attribute)
+            fig2 = render_bar(attribute_date, color_label, attribute, aggregation_type=aggregation_type_modified)
         else:
             attribute_date = get_attribute(attribute, start_date, end_date,
                                         iso_code)
-            fig2 = render_line(attribute_date, attribute, "date", 'location')
+            fig2 = render_line(attribute_date, "date", attribute, 'location')
     else:
         attribute_date = get_attribute(
             attribute, start_date, end_date, iso_code, aggregation_type)
         if aggregation_type != "none":
-            fig2 = render_bar(attribute_date, "location", attribute)
+            fig2 = render_bar(attribute_date, "location", attribute, aggregation_type=aggregation_type_modified)
         else:
             fig2 = render_line(attribute_date, "date", attribute, "location")
 
