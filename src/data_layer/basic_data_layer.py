@@ -42,7 +42,7 @@ def get_filtered_countries(iso_code, attribute_conditions):
 def get_simple_filtered_countries(
     continent=None, group=None, selected_group=None, should_group=False
 ):
-    df = DBConnection().get_df("iso_code, gdp_per_capita, continent", "covid")
+    df = DBConnection().get_df(f"iso_code, continent, gdp_per_capita, expected_years_of_school, population_density, human_development_index", "covid")
 
     if continent:
         df = df[df.continent.isin(continent)]

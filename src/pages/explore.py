@@ -305,6 +305,8 @@ def update_filter(n_clicks, filter_type, countries, attribute, filter_expression
 
         success_message = "Found " + str(len(countries)) + " countries" if len(
             countries) > 0 else "No countries found, showing all countries"
+        success_message = "Found " + str(len(countries)) + " countries" + " (" + countries[0]  + ")" if len(
+            countries) == 1 else success_message
         success_block = dbc.Alert(
             success_message, color="success", class_name="alert")
 
@@ -404,7 +406,7 @@ def update_all_graphs(iso_code, attribute, aggregation_type, relayoutData, filte
         else:
             attribute_date = get_attribute(attribute, start_date, end_date,
                                         iso_code)
-            fig2 = render_line(attribute_date, attribute, "date", 'location')
+            fig2 = render_line(attribute_date, "date", attribute, 'location')
     else:
         attribute_date = get_attribute(
             attribute, start_date, end_date, iso_code, aggregation_type)

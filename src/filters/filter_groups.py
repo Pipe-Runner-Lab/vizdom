@@ -5,14 +5,34 @@ custom_groups = {
     "Upper Middle Income": {},
     "High Income": {}
   },
-  "Education": {
-    "Primary": {},
-    "Secondary": {},
+  "Expected Years of Schooling Percentile": {
+    "Low": {},
+    "Medium": {},
+    "High": {}
+  },
+  "Population Density Percentile": {
+    "Low Density": {},
+    "Medium Density": {},
+    "High Density": {}
+  },
+  "Human Development Index Percentile": {
+    "Low": {},
+    "Medium": {},
+    "High": {}
   }
 }
 
 quartiles = {
   "Income Groups Percentile": {
     "column": "gdp_per_capita"
+  },
+  "Expected Years of Schooling Percentile": {
+    "column": "expected_years_of_school"
+  },
+  "Population Density Percentile": {
+    "column": "population_density"
+  },
+  "Human Development Index Percentile": {
+    "column": "human_development_index"
   }
 }
