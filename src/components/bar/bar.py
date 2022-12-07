@@ -6,8 +6,12 @@ from crawlers.url_crawlers import get_our_world_in_data_attributes
 
 
 def render_bar(df, x_column, y_column, color_column=None):
+    try:
+        x_label = get_our_world_in_data_attributes[x_column]["label"]
+    except:
+        x_label = x_column
     fig = px.bar(df, y=y_column, x=x_column, color=color_column, labels={
-                    x_column: get_our_world_in_data_attributes[x_column]["label"],
+                    x_column: x_label,
                     y_column: get_our_world_in_data_attributes[y_column]["label"]})
     return fig
 

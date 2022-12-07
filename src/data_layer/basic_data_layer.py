@@ -245,16 +245,17 @@ def get_aggregate_grouped(df, attribute, type, group_data):
     grouped_data = pd.DataFrame(columns=[group_column, attribute])
     
     for group, countries in group_data[group_column].items():
-        df = df[df.iso_code.isin(countries)]
+        df_countries = df.loc[df.iso_code.isin(countries)]
         if type == "mean":
-            agg_value = df[attribute].mean()
+            agg_value = df_countries[attribute].mean()
         elif type == "sum":
-            agg_value = df[attribute].sum()
+            agg_value = df_countries[attribute].sum()
         elif type == "latest":
             # TODO: Implement latest
             raise Exception("Invalid aggregation type")
         else:
             raise Exception("Invalid aggregation type")
+        
         grouped_data = pd.concat(
             [grouped_data, pd.DataFrame({group_column: [group], attribute: [agg_value]})], ignore_index=True
         )

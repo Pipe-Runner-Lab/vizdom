@@ -6,7 +6,7 @@ from components.bar.bar import render_bar_compare, render_bar
 from components.layouts.page_layouts import three_splitter_v1
 from data_layer.basic_data_layer import get_aggregated_total_cases_by_country, get_list_of_countries, get_total_number_of_cases_by_date, get_attribute, get_filtered_countries, get_list_of_continents, get_simple_filtered_countries
 import dash_bootstrap_components as dbc
-from crawlers.url_crawlers import get_our_world_in_data_attributes, get_our_world_in_data_real_attributes
+from crawlers.url_crawlers import get_our_world_in_data_real_attributes
 from components.filter_input.filter_input import render_filter_input
 from utils.date_range import get_date_range
 from utils.expression_parser import parse
@@ -381,9 +381,8 @@ def update_bottom_graph(iso_code, relayoutData, filter_data):
 def update_all_graphs(iso_code, attribute, aggregation_type, relayoutData, filter_data):
     start_date, end_date = get_date_range(relayoutData)
     filter_data = json.loads(filter_data) if filter_data is not None else {}
+    
     iso_code_filter = filter_data.get("countries", None)
-    
-    
     is_single_country = iso_code != "All" or (iso_code == "All" and iso_code_filter and len(iso_code_filter) == 1)
 
     if not is_single_country: 
@@ -391,7 +390,6 @@ def update_all_graphs(iso_code, attribute, aggregation_type, relayoutData, filte
         group_data = filter_data.get("group", None)
         should_group = group_data
         # if group_data:
-        print(group_data)
         color_label = list(group_data.keys())[0] if should_group else 'location'
         
         aggregation_type_modified = aggregation_type if aggregation_type != 'none' else 'mean'
@@ -399,10 +397,10 @@ def update_all_graphs(iso_code, attribute, aggregation_type, relayoutData, filte
 
         # Fetch
         attribute_date = get_attribute(
-            attribute, start_date, end_date, iso_code, aggregation_type_modified)
+            attribute, start_date, end_date, iso_code, aggregation_type_modified, group=group_data)
         
         if should_aggregate or should_group:
-            fig2 = render_bar(attribute_date, attribute, color_label)
+            fig2 = render_bar(attribute_date, color_label, attribute)
         else:
             attribute_date = get_attribute(attribute, start_date, end_date,
                                         iso_code)
@@ -410,14 +408,12 @@ def update_all_graphs(iso_code, attribute, aggregation_type, relayoutData, filte
     else:
         attribute_date = get_attribute(
             attribute, start_date, end_date, iso_code, aggregation_type)
+        if aggregation_type != "none":
+            fig2 = render_bar(attribute_date, "location", attribute)
+        else:
+            fig2 = render_line(attribute_date, "date", attribute, "location")
 
     country_agg_data = get_aggregated_total_cases_by_country(attribute, start_date, end_date, iso_code, 'mean' if aggregation_type == 'none' else aggregation_type)
-
-    if aggregation_type != "none":
-        fig2 = render_bar(attribute_date, "location", attribute)
-    else:
-        fig2 = render_line(attribute_date, "date", attribute, "location")
-
     fig1 = render_map(country_agg_data, attribute, aggregation_type = 'mean' if aggregation_type == 'none' else aggregation_type)
 
     return fig1, fig2, {"opacity": "1"}, {"opacity": "1"}
