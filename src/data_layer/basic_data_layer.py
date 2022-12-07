@@ -64,12 +64,15 @@ def get_simple_filtered_countries(
 
             idx = 0
             for available_group in list(custom_groups[group_title].keys()):
-                if idx == 0:
+                if idx == 0: 
+                    q_0 = df[column].quantile(curr_quantile)
+                    min_val = df[column].min()
                     group[group_title][available_group] = (
-                        df[df[column] < df[column].quantile(curr_quantile)]
+                        df[df[column] < q_0 if q_0 > min_val else df[column] <= q_0]
                         .iso_code.unique()
                         .tolist()
                     )
+                    
                 elif idx == len(list(custom_groups[group_title].keys())) - 1:
                     group[group_title][available_group] = (
                         df[df[column] >= df[column].quantile(curr_quantile)]
@@ -88,6 +91,7 @@ def get_simple_filtered_countries(
                         .iso_code.unique()
                         .tolist()
                     )
+                
                 curr_quantile += quantile
                 idx += 1
 
@@ -213,7 +217,7 @@ def compute_corr_attributes(attribute, start_date=None, end_date=None, iso_code=
     corr_matrix.rename(
         columns={"index": "Attributes", attribute: "Correlation"}, inplace=True
     )
-    # corr_matrix = corr_matrix.sort_values(by=['Correlation'], ascending=False)
+    corr_matrix = corr_matrix.sort_values(by=['Correlation'], ascending=False)
     corr_matrix = corr_matrix[corr_matrix["Attributes"] != attribute]
     corr_matrix["Correlation"] = corr_matrix["Correlation"].round(decimals=6)
     return corr_matrix
