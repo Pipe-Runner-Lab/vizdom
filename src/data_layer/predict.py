@@ -11,12 +11,12 @@ from crawlers.url_crawlers import get_attributes_for_predict
 
 model_params = {
     "lasso": {
-        "alpha": 0.001,
-        "max_iter": 10000,
+        "alpha": 0.0001,
+        "max_iter": 100000,
     },
     "ridge": {
-        "alpha": 0.001,
-        "max_iter": 10000,
+        "alpha": 0.0001,
+        "max_iter": 100000,
     }
 }
 
