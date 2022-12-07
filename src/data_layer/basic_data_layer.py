@@ -251,8 +251,8 @@ def get_aggregate_grouped(df, attribute, type, group_data):
         elif type == "sum":
             agg_value = df_countries[attribute].sum()
         elif type == "latest":
-            # TODO: Implement latest
-            raise Exception("Invalid aggregation type")
+            # TODO: Implement latest (temporarily using mean)
+            agg_value = df_countries[attribute].mean()
         else:
             raise Exception("Invalid aggregation type")
         
