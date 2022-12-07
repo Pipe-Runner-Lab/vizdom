@@ -409,6 +409,8 @@ def update_all_graphs(iso_code, attribute, aggregation_type, relayoutData, filte
                                         iso_code)
             fig2 = render_line(attribute_date, "date", attribute, 'location')
     else:
+        if iso_code == "All":
+            iso_code = iso_code_filter
         attribute_date = get_attribute(
             attribute, start_date, end_date, iso_code, aggregation_type)
         if aggregation_type != "none":
