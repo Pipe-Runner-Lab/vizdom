@@ -8,8 +8,6 @@ The pipeline is as follows:
 4. Store the data in the DB using the DB connection
 """
 
-import schedule
-from time import sleep
 from connection.db_connector import DBConnection
 from crawlers.url_crawlers import get_mask_data, get_our_world_in_data, get_school_data, get_our_world_in_data_attributes
 from filters.base_filters import country_based_interpolation, keep_columns_by_name, drop_rows_with_OWID, drop_rows_with_occurrence_number
@@ -18,6 +16,7 @@ from data_engine.base_engine import combine_data_with_mask, combine_data_with_sc
 db = DBConnection()
 
 def run_pipeline():
+    print("Running pipeline...")
     attributes = get_our_world_in_data_attributes.keys()
     covid_general = get_our_world_in_data()
     covid_mask = get_mask_data()
@@ -35,11 +34,6 @@ def run_pipeline():
     else:
         rest_data = data[~(data['date'] <= latest_db_entry['date'][0])] # remove rows of data that is <= latest entry 
         db.populate_with_data_frame('covid', rest_data)
-    
-    
-# run_pipeline()
-schedule.every().day.at('00:00').do(run_pipeline)
 
-while True:
-    schedule.run_pending()
-    sleep(1)
+
+run_pipeline()
