@@ -143,7 +143,7 @@ def get_attribute(
 
     # When aggregation is done, we don't need to resample since date will have no meaning
     if aggregation_type != None and aggregation_type != "none":
-        return get_aggregate(df, attribute, aggregation_type, None)
+        return get_aggregate(df, attribute, aggregation_type)
 
     return resample_by_date_range(df, start_date, end_date)
 
@@ -219,21 +219,9 @@ def compute_corr_attributes(attribute, start_date=None, end_date=None, iso_code=
     corr_matrix["Correlation"] = corr_matrix["Correlation"].round(decimals=6)
     return corr_matrix
 
-
-def get_latest(df, attribute):
-    latest_data = pd.DataFrame(columns=["location", attribute])
-    unique_countries = df.location.unique()
-    for country in unique_countries:
-        data = df[df.location == country]
-        del data["date"]
-        latest = data.tail(1)
-        latest_data = pd.concat([latest_data, latest])
-    return latest_data.reset_index()
-
-
-def get_aggregate(df, attribute, type, group_column=None):
+def get_aggregate(df, attribute, type):
     if type == "mean":
-        return df.groupby(by=["location", "iso_code"], as_index=False)[attribute].mean()
+        return df.groupby(["location", "iso_code"], as_index=False)[attribute].mean()
     elif type == "sum":
         return df.groupby(["location", "iso_code"], as_index=False)[attribute].sum()
     elif type == "latest":
@@ -244,7 +232,6 @@ def get_aggregate(df, attribute, type, group_column=None):
 def get_aggregate_grouped(df, attribute, type, group_data):
     group_column = list(group_data.keys())[0]
     grouped_data = pd.DataFrame(columns=[group_column, attribute])
-
     for group, countries in group_data[group_column].items():
         df_countries = df.loc[df.iso_code.isin(countries)]
         if type == "mean":
@@ -252,8 +239,11 @@ def get_aggregate_grouped(df, attribute, type, group_data):
         elif type == "sum":
             agg_value = df_countries[attribute].sum()
         elif type == "latest":
-            # TODO: Implement latest (temporarily using mean)
-            agg_value = df_countries[attribute].mean()
+            df_countries["date"] = pd.to_datetime(df_countries["date"])
+            agg_by_date = df_countries.groupby(['date']).sum()
+            latest_date = agg_by_date.index.max()
+            latest_row = agg_by_date.loc[(agg_by_date.index == latest_date)]
+            agg_value = latest_row[attribute][0]
         else:
             raise Exception("Invalid aggregation type")
         
@@ -262,6 +252,15 @@ def get_aggregate_grouped(df, attribute, type, group_data):
         )
     return grouped_data
 
+def get_latest(df, attribute):
+    latest_data = pd.DataFrame(columns=["location", attribute])
+    unique_countries = df.location.unique()
+    for country in unique_countries:
+        data = df[df.location == country]
+        del data["date"]
+        latest = data.tail(1)
+        latest_data = pd.concat([latest_data, latest])
+    return latest_data.reset_index()
 
 def create_table_bar_styles_multiple_countries(
     attribute_1, attribute_2, start_date, end_date, iso_code
