@@ -1,7 +1,8 @@
 # Vizdom
 Link to hosted server (Needs NTNU VPN to access): http://10.24.92.68:8080/  
-Link to user-manual: https://github.com/Pipe-Runner-Lab/vizdom/wiki/User-Manual
-Link to Github repo: https://github.com/Pipe-Runner-Lab/vizdom
+Link to user-manual: https://github.com/Pipe-Runner-Lab/vizdom/wiki/User-Manual  
+Link to Github repo: https://github.com/Pipe-Runner-Lab/vizdom  
+Demo Video: https://youtu.be/_qp46ulb_Jw
 
 ![image](https://user-images.githubusercontent.com/19551058/208308797-727b84ad-7945-4da0-bcbb-28af61f9299e.png)
 ![image](https://user-images.githubusercontent.com/19551058/208308836-4049d26c-bda1-4434-b38c-5f7881d1b9ce.png)
